@@ -250,7 +250,7 @@ function render() {
     c.innerHTML = `
       <header class="brand-head">
         <span class="tile mark">${logo(r.brand.icon)}</span>
-        <div><h1>${esc(r.brand.name)}</h1><p>${r.brand.tabs.length} tabs</p></div>
+        <h1>${esc(r.brand.name)}</h1>
       </header>
       ${painel(r.brand, r.tab)}`;
     const A = ANALISES[r.tab.id];
