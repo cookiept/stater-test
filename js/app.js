@@ -1,14 +1,14 @@
 // Stater · protótipo. Uma página, menu de marcas à esquerda, cada tab lê o seu Excel.
-import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261027-1445';
-import { icon } from './icons.js?v=20261027-1445';
-import { logo } from './logos.js?v=20261027-1445';
-import { esc, info, ligarTooltips, toast, confirmar, onda } from './ui.js?v=20261027-1445';
-import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261027-1445';
-import { resumoNps, fmt } from './stats.js?v=20261027-1445';
-import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261027-1445';
-import * as vNps from './views/nps.js?v=20261027-1445';
-import * as vCausas from './views/causas.js?v=20261027-1445';
-import { exemplos } from './exemplo.js?v=20261027-1445';
+import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261027-1447';
+import { icon } from './icons.js?v=20261027-1447';
+import { logo } from './logos.js?v=20261027-1447';
+import { esc, info, ligarTooltips, toast, confirmar, onda } from './ui.js?v=20261027-1447';
+import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261027-1447';
+import { resumoNps, fmt, sinal } from './stats.js?v=20261027-1447';
+import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261027-1447';
+import * as vNps from './views/nps.js?v=20261027-1447';
+import * as vCausas from './views/causas.js?v=20261027-1447';
+import { exemplos } from './exemplo.js?v=20261027-1447';
 
 // Tabs que funcionam no protótipo
 const ANALISES = {
@@ -175,6 +175,37 @@ function painel(brand, tab) {
   </section>`;
 }
 
+// ---------- Metas ----------
+const dataMetas = () => localStorage.getItem('stater:v1:meta-data');
+
+function editarMetas() {
+  const d = document.createElement('dialog');
+  d.className = 'dlg-metas';
+  d.innerHTML = `<form method="dialog">
+    <h3>Metas de NPS</h3>
+    <p>Valor de −100 a 100 para cada marca. Usado na Overview e no resumo da tab NPS.</p>
+    <div class="metas-lista">${BRANDS.map(b => `
+      <label class="meta-linha"><span class="tile mark">${logo(b.icon)}</span><span>${esc(b.name)}</span>
+        <input name="${b.id}" type="number" min="-100" max="100" step="1" required value="${meta(b.id)}"></label>`).join('')}
+    </div>
+    <div class="row"><button class="btn btn-secondary" value="no" formnovalidate>Cancelar</button><button class="btn btn-primary" value="yes">Guardar metas</button></div>
+  </form>`;
+  document.body.appendChild(d);
+  d.addEventListener('close', () => {
+    if (d.returnValue === 'yes') {
+      new FormData(d.querySelector('form')).forEach((v, id) => {
+        const n = Math.max(-100, Math.min(100, parseInt(v, 10)));
+        if (Number.isFinite(n)) localStorage.setItem(`stater:v1:meta:${id}`, String(n));
+      });
+      localStorage.setItem('stater:v1:meta-data', new Date().toISOString());
+      toast('Metas guardadas.');
+      render();
+    }
+    d.remove();
+  });
+  d.showModal();
+}
+
 // ---------- Overview (Grupo Brisa) ----------
 function overview() {
   const dados = BRANDS.map(b => {
@@ -193,21 +224,25 @@ function overview() {
       </div>
       <div class="stat"><b class="num">${comDados.length}/${BRANDS.length}</b><span>marcas com dados${totalResp ? ` · ${fmt(totalResp)} respostas` : ''}</span></div>
     </section>
+    <div class="ov-bar">
+      <h2>Marcas</h2>
+      ${dataMetas() ? `<span class="muted">Metas atualizadas a ${formatarData(dataMetas())}</span>` : ''}
+      <button class="btn btn-secondary btn-sm" data-act="metas">${icon('target')} Editar metas</button>
+    </div>
     <div class="ov-grid">${dados.map(({ b, rec, r, m }) => `
       <div class="ov-card" style="${tileVars(b)};--font-b:${b.font}, 'Noto Sans', sans-serif">
         <div class="top"><span class="tile mark">${logo(b.icon)}</span><b>${esc(b.name)}</b>
-          ${r ? `<span class="badge ${r.nps >= m ? 'good' : 'bad'}">${r.nps >= m ? 'Meta atingida' : 'Abaixo da meta'}</span>` : '<span class="badge">Sem dados</span>'}</div>
+          ${r ? `<span class="badge ${r.nps >= m ? 'good' : 'bad'}" title="${r.nps >= m ? 'Meta atingida' : 'Abaixo da meta'}">${sinal(r.nps - m)} vs meta</span>` : '<span class="badge">Sem dados</span>'}</div>
         ${r ? `<div class="val"><b class="num">${fmt(r.nps)}</b><span class="muted">NPS · ${fmt(r.total)} respostas</span></div>
           <div class="compo" style="height:10px" aria-hidden="true"><div class="d" style="flex:${r.pctD}"></div><div class="n" style="flex:${r.pctN}"></div><div class="p" style="flex:${r.pctP};background:${b.colors.main}"></div></div>
           <div class="muted">${esc(formatarPeriodo(rec.data.periodo))}${rec.exemplo ? ' · dados de exemplo' : ''}</div>`
         : `<div class="wait">A aguardar dados da tab NPS</div>`}
-        <div class="meta"><label for="meta-${b.id}">Objetivo NPS</label><input id="meta-${b.id}" data-meta="${b.id}" inputmode="numeric" value="${m}" aria-describedby="meta-h">
+        <div class="meta">${icon('target')} Meta <b>${m}</b>
           ${ativa(b, b.tabs[0]) ? `<a class="btn btn-ghost btn-sm" href="#/${b.id}/nps" style="margin-left:auto">Abrir ${icon('chevron')}</a>` : ''}</div>
       </div>`).join('')}
     </div>
-    <span id="meta-h" class="sr-only">Número de −100 a 100. Guarda ao sair do campo.</span>
     <section class="card" style="background:#fff" aria-labelledby="h-ov">
-      <div class="card-head"><h3 id="h-ov">NPS vs objetivo por marca ${info('NPS vs objetivo', 'Barra: NPS da tab NPS de cada marca. Traço: objetivo definido nos cartões acima. Marcas sem dados ficam vazias.')}</h3></div>
+      <div class="card-head"><h3 id="h-ov">NPS vs objetivo por marca ${info('NPS vs objetivo', 'Barra: NPS da tab NPS de cada marca. Traço: meta definida em Editar metas. Marcas sem dados ficam vazias.')}</h3></div>
       <div id="ch-ov" class="chart"></div>
     </section>`;
 }
@@ -223,14 +258,6 @@ function montarOverview() {
     xaxis: { axisBorder: { show: false }, axisTicks: { show: false }, labels: { style: { fontSize: '12px', fontWeight: 600, colors: '#494949' } } },
     tooltip: { y: { formatter: (v, { dataPointIndex }) => (v == null ? 'sem dados' : `${fmt(v)} (objetivo ${dados[dataPointIndex].m})`) } },
     noData: { text: 'Sem dados' },
-  }));
-  document.querySelectorAll('[data-meta]').forEach(inp => inp.addEventListener('change', () => {
-    const v = Math.max(-100, Math.min(100, parseInt(inp.value, 10)));
-    if (!Number.isFinite(v)) { inp.value = meta(inp.dataset.meta); return; }
-    inp.value = v;
-    localStorage.setItem(`stater:v1:meta:${inp.dataset.meta}`, String(v));
-    toast('Objetivo guardado.');
-    render();
   }));
 }
 
@@ -303,6 +330,7 @@ document.addEventListener('click', async e => {
   if (!b || b.disabled) return;
   const r = rota();
   if (b.dataset.act === 'upload') $('#file').click();
+  if (b.dataset.act === 'metas') editarMetas();
   if (b.dataset.act === 'sample' && r.brand) {
     const ex = exemplos[r.tab.id];
     store.set(r.brand.id, r.tab.id, { ...ex, savedAt: new Date().toISOString(), exemplo: true });

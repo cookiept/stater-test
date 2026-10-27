@@ -299,7 +299,18 @@ a.ov-card:hover { box-shadow: var(--shadow-2); transform: translateY(-2px); }
 .ov-card .val b { font-size: 40px; line-height: 44px; font-weight: 700; letter-spacing: -1px; }
 .ov-card .wait { font-size: 13px; color: var(--text-tertiary); border: 1.5px dashed var(--stroke-strong); border-radius: 12px; padding: 14px; text-align: center; }
 .ov-card .meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-tertiary); }
-.ov-card .meta input { width: 56px; height: 28px; border: 1px solid var(--stroke-strong); border-radius: 8px; padding: 0 8px; text-align: center; font-weight: 600; color: var(--text-primary); }
+.ov-card .meta .ico { width: 14px; height: 14px; }
+.ov-card .meta b { color: var(--text-primary); }
+.ov-bar { display: flex; align-items: center; gap: 12px; margin-bottom: -8px; }
+.ov-bar h2 { margin: 0; font-size: 18px; margin-right: auto; }
+.ov-bar .muted { font-size: 12px; }
+.dlg-metas { max-width: 460px; width: calc(100% - 32px); }
+.metas-lista { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+.meta-linha { display: grid; grid-template-columns: 32px 1fr 84px; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 12px; }
+.meta-linha:hover { background: var(--surface-mid); }
+.meta-linha .tile { width: 32px; height: 32px; border-radius: 10px; }
+.meta-linha input { height: 36px; border: 1px solid var(--stroke-strong); border-radius: 10px; padding: 0 10px; text-align: right; font: 600 15px var(--font-ui); color: var(--text-primary); }
+.meta-linha input:focus { outline: 2px solid var(--brand); outline-offset: 1px; }
 .ov-hero { background: linear-gradient(135deg, var(--brand-darkest), var(--brand)); color: #fff; border-radius: 22px; padding: 26px 28px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 28px; align-items: center; position: relative; overflow: hidden; }
 .ov-logo { position: relative; height: 112px; width: auto; display: block; }
 @media (max-width: 900px) { .ov-hero { grid-template-columns: auto minmax(0, 1fr); } .ov-hero .stat { grid-column: 1 / -1; text-align: left; } .ov-logo { height: 72px; } }
