@@ -9,34 +9,30 @@ const npsGlobal = data => {
   return a ? { nps: npsDe(a.d, a.p, a.d + a.n + a.p), total: a.d + a.n + a.p } : null;
 };
 
-export function kpiCartao(rec) {
-  return { valor: fmt(rec.data.causas.length), unidade: 'causas' };
-}
-
 export function chips(rec) {
   const g = npsGlobal(rec.data);
   return { respostas: g ? g.total : rec.data.causas.reduce((a, c) => a + c.total, 0) };
 }
 
-export function pontos(rec) {
+// Resumo: os três blocos do Stater v10 (volume, melhor NPS, maior detração).
+// Otimizado: "Outra" e "Sem sugestões" e causas com menos de 30 menções não entram no melhor e pior.
+export function resumo(rec) {
   const cs = enriquecerCausas(rec.data.causas).filter(c => !c.semSugestao);
-  const g = npsGlobal(rec.data);
+  const mencoes = enriquecerCausas(rec.data.causas).reduce((a, c) => a + c.total, 0);
   const fiaveis = cs.filter(c => !c.amostraPequena);
   const lista = fiaveis.length ? fiaveis : cs;
   const maior = [...cs].sort((a, b) => b.total - a.total)[0];
-  const pior = [...lista].sort((a, b) => a.nps - b.nps)[0];
   const melhor = [...lista].sort((a, b) => b.nps - a.nps)[0];
-  const out = [];
-  if (maior) out.push({ tom: '', valor: fmt(maior.total), rot: 'menções', texto: `<strong>${esc(maior.nome)}</strong> é a causa mais referida (${fmt(maior.quota)}% das menções).` });
-  if (pior) out.push({
-    tom: 'bad', valor: fmt(pior.nps), rot: 'pior NPS',
-    texto: `<strong>${esc(pior.nome)}</strong> tem o NPS mais baixo${g ? `, ${fmt(g.nps - pior.nps)} pontos abaixo do NPS de quem respondeu (${fmt(g.nps)})` : ''}.`,
-  });
-  if (melhor && melhor !== pior) out.push({ tom: 'good', valor: fmt(melhor.nps), rot: 'melhor NPS', texto: `<strong>${esc(melhor.nome)}</strong> tem o NPS mais alto entre as causas.` });
+  const pior = [...lista].sort((a, b) => a.nps - b.nps)[0];
+  const blocos = [];
+  if (maior) blocos.push({ titulo: 'Amostra e volume', texto: `Análise de <strong>${fmt(mencoes)}</strong> ocorrências de causa raiz. O motivo mais frequente é <strong>${esc(maior.nome)}</strong> com <strong>${fmt(maior.total)}</strong> menções.` });
+  if (melhor) blocos.push({ titulo: 'Melhor desempenho NPS', tom: 'good', texto: `A causa com maior índice de satisfação relativa é <strong>${esc(melhor.nome)}</strong> com um NPS de <strong>${sinal(melhor.nps)}</strong> (${fmt(melhor.pctP)}% de promotores).` });
+  if (pior && pior !== melhor) blocos.push({ titulo: 'Maior ponto de detração', tom: 'bad', texto: `A causa raiz com maior impacto negativo é <strong>${esc(pior.nome)}</strong> com um NPS de <strong>${sinal(pior.nps)}</strong> (${fmt(pior.pctD)}% de detratores).` });
   const pequenas = cs.filter(c => c.amostraPequena).length;
-  if (pequenas) out.push({ tom: '', valor: String(pequenas), rot: 'amostra pequena', texto: `${pequenas === 1 ? 'Uma causa tem' : `${pequenas} causas têm`} menos de 30 menções: o NPS delas pode variar muito e não entra nos destaques.` });
-  if (rec.data.semRespostas?.length) out.push({ tom: '', valor: String(rec.data.semRespostas.length), rot: 'sem menções', texto: `${rec.data.semRespostas.length} opções não foram escolhidas por ninguém neste período e ficam fora do gráfico.` });
-  return out;
+  const notas = [];
+  if (pequenas) notas.push(`${pequenas === 1 ? 'Uma causa tem' : `${pequenas} causas têm`} menos de 30 menções e não entra${pequenas === 1 ? '' : 'm'} no melhor e pior.`);
+  if (rec.data.semRespostas?.length) notas.push(`${rec.data.semRespostas.length} opções sem menções neste período.`);
+  return { blocos, notas };
 }
 
 export function html(rec) {
@@ -158,10 +154,8 @@ export function mount(rec, brand) {
   pintar();
 }
 
-export const comoTirar = [
-  'No Qualtrics, abre o inquérito da marca e vai a <b>Stats iQ</b>.',
-  'Seleciona <b>(Group) NPS</b> e a pergunta de causa raiz (<i>CR …</i>, resposta múltipla).',
-  'Em <b>Relate</b>, confirma que aparecem as linhas Detrator, Neutro e Promotor para cada causa.',
-  'Aplica o filtro de data do período que queres analisar.',
-  'Exporta para <b>Excel</b> e carrega o ficheiro nesta tab.',
-];
+// Texto do Stater v10, sem alterações
+export const importar = {
+  titulo: 'Como importar os dados de NPS por causas raiz',
+  texto: 'No Stats iQ, selecione a variável principal "(Group) NPS" e, como variável secundária, a "Causa Raiz" à escolha. Em seguida, execute a opção "Relate" e exporte a tabela para Excel.',
+};

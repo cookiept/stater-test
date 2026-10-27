@@ -4,48 +4,39 @@ import { base, junta, desenhar } from '../charts.js';
 import { info, esc } from '../ui.js';
 import { icon } from '../icons.js';
 
-export function kpiCartao(rec) {
-  const r = resumoNps(rec.data.contagens);
-  return { valor: fmt(r.nps), unidade: 'NPS' };
-}
-
 export function chips(rec) {
   return { respostas: resumoNps(rec.data.contagens).total };
 }
 
-export function pontos(rec, meta) {
+// Resumo: regra do Stater v10 para o NPS da Colibri (ler_dados_colibri.js), com os mesmos limites.
+export function resumo(rec, meta) {
   const c = rec.data.contagens;
   const r = resumoNps(c);
-  const dif = r.nps - meta;
-  const pct6NosD = r.d ? (c[6] / r.d) * 100 : 0;
-  const pct8NosN = r.n ? (c[8] / r.n) * 100 : 0;
-  const ganho6 = (c[6] / r.total) * 100;
-  const ganho8 = (c[8] / r.total) * 100;
-  const margem = v => (v >= 40 ? 'boa' : v >= 30 ? 'relevante' : 'limitada');
-  return [
-    {
-      tom: dif < 0 ? 'bad' : 'good', valor: fmt(r.nps), rot: dif < 0 ? `${sinal(dif)} vs meta` : `${sinal(dif)} vs meta`,
-      texto: dif < 0
-        ? `NPS de <strong>${fmt(r.nps)}</strong>, ${fmt(-dif)} pontos abaixo da meta de ${meta}.`
-        : `NPS de <strong>${fmt(r.nps)}</strong>, ${dif === 0 ? 'igual à' : `${fmt(dif)} pontos acima da`} meta de ${meta}.`,
-    },
-    {
-      tom: '', valor: `${fmt(r.pctP)}%`, rot: 'promotores',
-      texto: `<strong>${fmt(r.pctP)}%</strong> deram 9 ou 10 e <strong>${fmt(r.pctD)}%</strong> deram 0 a 6.`,
-    },
-    {
-      tom: '', valor: `${fmt(pct6NosD)}%`, rot: 'detratores com 6',
-      texto: `Margem ${margem(pct6NosD)} para reduzir detratores: se quem deu 6 passasse a neutro, o NPS subia <strong>${sinal(Math.round(ganho6))}</strong> pontos.`,
-    },
-    {
-      tom: '', valor: `${fmt(pct8NosN)}%`, rot: 'neutros com 8',
-      texto: `Margem ${margem(pct8NosN)} para converter neutros: se quem deu 8 passasse a promotor, o NPS subia <strong>${sinal(Math.round(ganho8))}</strong> pontos.`,
-    },
-    {
-      tom: '', valor: String(r.moda), rot: 'nota mais dada',
-      texto: `A nota mais dada foi <strong>${r.moda}</strong>, por ${fmt((c[r.moda] / r.total) * 100)}% das pessoas.`,
-    },
-  ];
+  const p6T = (c[6] / r.total) * 100, p6D = r.d ? (c[6] / r.d) * 100 : 0;
+  const p8T = (c[8] / r.total) * 100, p8N = r.n ? (c[8] / r.n) * 100 : 0;
+  const m = r.media;
+  const detratorBoa = p6D >= 40 || p6T >= 15 || (m >= 6 && m <= 6.9);
+  const neutroBoa = p8N >= 50 || p8T >= 15 || (m >= 8 && m <= 8.9);
+  const detratorRelevante = p6D >= 30 || p6T >= 10 || (m >= 5.5 && m <= 6.9);
+  const neutroRelevante = p8N >= 40 || p8T >= 10 || (m >= 7.5 && m <= 8.9);
+  const margem = detratorBoa || neutroBoa ? 'boa margem' : detratorRelevante || neutroRelevante ? 'margem relevante' : 'margem limitada';
+  // A ação segue o lado que tem margem (boa primeiro, depois relevante)
+  const det = detratorBoa || (!neutroBoa && detratorRelevante);
+  const neu = neutroBoa || (!detratorBoa && neutroRelevante);
+  const acao = det && !neu ? 'redução de detratores'
+    : neu && !det ? 'conversão de clientes neutros em promotores'
+    : 'redução de detratores e da conversão de clientes neutros em promotores';
+  const avaliacao = r.nps >= meta ? 'positiva' : 'negativa';
+  const comparacao = r.nps > meta ? 'acima do objetivo' : r.nps === meta ? 'em linha com o objetivo' : 'abaixo do objetivo';
+  return {
+    tom: r.nps >= meta ? 'good' : 'bad',
+    texto: `Com base em <strong>${fmt(r.total)}</strong> avaliações, o NPS foi <strong>${fmt(r.nps)}</strong>. A avaliação é <strong>${avaliacao}</strong>, estando <strong>${comparacao}</strong> (${meta}). A distribuição entre promotores, neutros e detratores indica <strong>${margem}</strong> para reforçar a recomendação, sobretudo através da <strong>${acao}</strong>.`,
+    factos: [
+      { valor: `${sinal(r.nps - meta)}`, rot: 'vs objetivo', tom: r.nps >= meta ? 'good' : 'bad', tip: 'Diferença entre o NPS e o objetivo definido na Overview.' },
+      { valor: `${fmt(p6D)}%`, rot: 'detratores com 6', tip: `Quem deu 6 está a um ponto de ser neutro. Se passassem a neutros, o NPS subia ${sinal(Math.round(p6T))} pontos. Margem boa a partir de 40% (ou 15% do total).` },
+      { valor: `${fmt(p8N)}%`, rot: 'neutros com 8', tip: `Quem deu 8 está a um ponto de ser promotor. Se passassem a promotores, o NPS subia ${sinal(Math.round(p8T))} pontos. Margem boa a partir de 50% (ou 15% do total).` },
+    ],
+  };
 }
 
 export function html(rec, meta) {
@@ -150,10 +141,8 @@ export function mount(rec, brand, meta) {
   }));
 }
 
-export const comoTirar = [
-  'No Qualtrics, abre o inquérito da marca e vai a <b>Stats iQ</b>.',
-  'Seleciona só a variável <b>NPS</b> (numérica, notas de 0 a 10).',
-  'Em <b>Describe</b>, confirma que aparece a tabela <i>Count of NPS</i>.',
-  'Aplica o filtro de data (<i>Start Date is between…</i>) do período que queres analisar.',
-  'Exporta para <b>Excel</b> e carrega o ficheiro nesta tab.',
-];
+// Texto do Stater v10, sem alterações
+export const importar = {
+  titulo: 'Como importar os dados de NPS',
+  texto: 'No Stats iQ, selecione a variável principal "(Numeric) NPS" e execute a opção "Describe". Em seguida, exporte a tabela para Excel.',
+};

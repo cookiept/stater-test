@@ -1,6 +1,7 @@
 // Stater · protótipo. Uma página, menu de marcas à esquerda, cada tab lê o seu Excel.
 import { BRANDS, GROUP, brandById, applyTheme } from './brands.js';
 import { icon } from './icons.js';
+import { logo } from './logos.js';
 import { esc, info, ligarTooltips, toast, confirmar, onda } from './ui.js';
 import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js';
 import { resumoNps, fmt } from './stats.js';
@@ -26,6 +27,7 @@ const meta = id => { const v = parseInt(localStorage.getItem(`stater:v1:meta:${i
 
 // ---------- Estado ----------
 let erro = null;
+let animarSub = false; // só anima a lista de tabs quando se muda de marca
 const rota = () => {
   const [, b, t] = location.hash.replace(/^#\/?/, '#/').split('/');
   const brand = brandById(b);
@@ -43,27 +45,21 @@ function tileVars(b) {
 function sidebar({ brand, tab }) {
   const itens = BRANDS.map(b => {
     const aberta = brand?.id === b.id;
-    const sub = aberta ? `<div class="sb-sub-nav">${b.tabs.map(t => `
+    const sub = aberta ? `<div class="sb-sub-nav${animarSub ? ' anim' : ''}">${b.tabs.map(t => `
         <a class="sb-tab" href="#/${b.id}/${t.id}" ${tab?.id === t.id ? 'aria-current="page"' : ''}>${icon(t.icon)}<span class="lbl" title="${esc(t.name)}">${esc(t.name)}</span>${store.get(b.id, t.id) ? '<span class="dot" title="Com dados"></span>' : ''}</a>`).join('')}</div>` : '';
     return `<a class="sb-item${aberta ? ' is-open' : ''}" href="#/${b.id}/${b.tabs[0].id}" style="${tileVars(b)}" ${aberta ? 'aria-expanded="true"' : 'aria-expanded="false"'}>
-        <span class="tile">${icon(b.icon)}</span><span>${esc(b.name)}</span><span class="count">${b.tabs.length} tabs</span></a>${sub}`;
+        <span class="tile mark">${logo(b.icon)}</span><span>${esc(b.name)}</span><span class="count">${b.tabs.length} tabs</span></a>${sub}`;
   }).join('');
-  const live = brand && tab && ANALISES[tab.id] && brand.id === 'colibri';
   return `
     <div class="sb-head"><div class="sb-logo">${icon('bars')}</div><div><div class="sb-title">Stater</div><div class="sb-sub">CX · Grupo Brisa</div></div></div>
     <div>
       <div class="sb-label">Marcas</div>
       <nav class="sb-nav" aria-label="Marcas">
-        <a class="sb-item${!brand ? ' is-open' : ''}" href="#/" style="${tileVars(GROUP)}" ${!brand ? 'aria-current="page"' : ''}><span class="tile">${icon('grupo')}</span><span>Overview</span><span class="count">grupo</span></a>
+        <a class="sb-item${!brand ? ' is-open' : ''}" href="#/" style="${tileVars(GROUP)}" ${!brand ? 'aria-current="page"' : ''}><span class="tile mark">${logo('grupo')}</span><span>Overview</span><span class="count">grupo</span></a>
         ${itens}
       </nav>
     </div>
     <div class="sb-foot">
-      <div class="sb-card">
-        <small>Cada tab lê o seu Excel</small>
-        <strong>Exportado do Qualtrics Stats iQ / Text iQ</strong>
-        <button class="btn btn-light btn-sm" data-act="upload" ${live ? '' : 'disabled'}>${icon('upload')} Carregar nesta tab</button>
-      </div>
       <div class="sb-note">${icon('lock')} Os dados ficam só neste browser.</div>
     </div>`;
 }
@@ -78,35 +74,8 @@ function topbar({ brand, tab }) {
   return `
     <nav class="crumbs" aria-label="Onde estás">${crumbs}</nav>
     <div class="spacer"></div>
-    ${rec ? `<span class="updated">Atualizado: ${esc(rec.fileName)} · ${formatarData(rec.savedAt)}</span>` : ''}
-    ${brand ? `<button class="btn btn-ghost btn-sm" data-act="clear" ${rec ? '' : 'disabled'}>${icon('trash')} Apagar dados</button>
-    <button class="btn btn-primary" data-act="upload" ${live ? '' : 'disabled'}>${icon('upload')} Carregar Excel</button>` : ''}`;
-}
-
-// ---------- Galeria de tabs ----------
-function galeria(brand, tab) {
-  const tons = [
-    { bg: brand.colors.main, on: brand.colors.on },
-    { bg: brand.colors.dark, on: '#fff' },
-    { bg: brand.colors.light, on: brand.colors.darkest },
-    { bg: brand.colors.darkest, on: '#fff' },
-  ];
-  return `<div class="gallery" role="list">${brand.tabs.map((t, i) => {
-    const rec = store.get(brand.id, t.id);
-    const A = ANALISES[t.id];
-    const live = A && brand.id === 'colibri';
-    const k = rec && A ? A.view.kpiCartao(rec) : null;
-    const tom = tons[i % tons.length];
-    const estado = tab.id === t.id ? `<span class="state on">Aberta</span>` : !live ? `<span class="state">Em breve</span>` : '';
-    return `<a role="listitem" class="gcard${live ? '' : ' soon'}" href="#/${brand.id}/${t.id}" ${tab.id === t.id ? 'aria-current="page"' : ''} style="--band:${tom.bg};--band-on:${tom.on}">
-      <div class="gcard-band">${onda(i + 2)}<span class="n">TAB ${String(i + 1).padStart(2, '0')}</span>${estado}</div>
-      <div class="gcard-icon">${icon(t.icon)}</div>
-      <div class="gcard-body">
-        <div><div class="t">${esc(t.name)}</div><div class="p">${rec ? esc(formatarPeriodo(rec.data.periodo)) : live ? 'Sem ficheiro' : 'Versão final'}</div></div>
-        <div class="v">${k ? `<b class="num">${k.valor}</b><span>${k.unidade}</span>` : `<b style="color:var(--text-disabled)">—</b>`}</div>
-      </div>
-    </a>`;
-  }).join('')}</div>`;
+    ${rec ? `<span class="updated">Atualizado a ${formatarData(rec.savedAt)}</span>` : ''}
+    ${brand ? `<button class="btn btn-primary" data-act="upload" ${live ? '' : 'disabled'}>${icon('upload')} Carregar Excel</button>` : ''}`;
 }
 
 // ---------- Painel da tab ----------
@@ -124,8 +93,8 @@ function painelVazio(brand, tab, A) {
         </div>
       </div>
       <div class="howto">
-        <h3>Como tirar este Excel</h3>
-        <ol class="steps">${A.view.comoTirar.map(s => `<li>${s}</li>`).join('')}</ol>
+        <h3>${esc(A.view.importar.titulo)}</h3>
+        <p class="import-txt">${esc(A.view.importar.texto)}</p>
         <div class="alert alert-info" style="margin-top:16px">${icon('lock')}<div>O ficheiro é lido só neste browser. Nada é enviado para a internet.</div></div>
       </div>
     </div>`;
@@ -137,6 +106,18 @@ function painelEmBreve(brand, tab) {
     <h3>Disponível na versão final</h3>
     <p>Neste protótipo só funcionam as tabs <b>NPS</b> e <b>NPS por Causa Raiz</b> da Colibri. Esta tab mantém o nome e as regras do Stater atual e vai ganhar o mesmo aspeto.</p>
     <a class="btn btn-secondary" href="#/colibri/nps">${icon('bars')} Ver a Colibri › NPS</a>
+  </div>`;
+}
+
+const TIP_REGRAS = 'O texto sai de regras fixas aplicadas aos números do Excel, as mesmas do Stater atual. Não há opinião nem IA: as mesmas contas dão sempre as mesmas frases.';
+
+function resumoHtml(r) {
+  const blocos = r.blocos || [{ texto: r.texto, tom: r.tom }];
+  return `<div class="resumo">
+    <h3 class="sec-title">Resumo <span class="badge" data-tip-title="Regras fixas" data-tip="${TIP_REGRAS}" tabindex="0">Regras fixas</span></h3>
+    ${blocos.map(b => `<div class="rs-bloco ${b.tom || ''}">${b.titulo ? `<b class="rs-t">${b.titulo}</b>` : ''}<p>${b.texto}</p></div>`).join('')}
+    ${r.factos ? `<div class="rs-factos">${r.factos.map(f => `<div class="rs-f ${f.tom || ''}"><b class="num">${f.valor}</b><span>${f.rot} ${f.tip ? info(f.rot, f.tip) : ''}</span></div>`).join('')}</div>` : ''}
+    ${r.notas?.length ? `<ul class="rs-notas">${r.notas.map(n => `<li>${n}</li>`).join('')}</ul>` : ''}
   </div>`;
 }
 
@@ -160,26 +141,23 @@ function painel(brand, tab) {
     <span class="chip">${icon('calendar')} Período do ficheiro <b class="chip brand" style="padding:2px 8px">${esc(formatarPeriodo(rec.data.periodo))}</b></span>
     <span class="chip">${icon('users')} Respostas <b class="num">${fmt(ch.respostas)}</b></span>
     <span class="chip">${icon('file')} Fonte <b>Stats iQ</b></span>`;
-  const pts = A.view.pontos(rec, m);
   return `<section class="panel">
     ${head(chipsHtml)}
     ${erro ? `<div class="alert error" role="alert" style="margin:16px 24px 0">${icon('info')}<div><b>Este ficheiro não serve para esta tab</b>${esc(erro)} Os dados anteriores continuam.</div></div>` : ''}
     <div class="panel-body">
       <aside class="panel-side">
-        <h3 class="sec-title">Pontos-chave <span class="badge" data-tip-title="Regras fixas" data-tip="Estes textos saem de regras fixas aplicadas aos números do Excel. Não há opinião nem IA: as mesmas contas dão sempre as mesmas frases." tabindex="0">Regras fixas</span></h3>
-        <div class="points">${pts.map(p => `
-          <div class="point ${p.tom}"><div class="pv"><b class="num">${p.valor}</b><span>${p.rot}</span></div><p>${p.texto}</p></div>`).join('')}
-        </div>
-        <details class="fold" open>
-          <summary>${icon('chevron')} Ficheiro desta tab</summary>
-          <div class="fold-body">
-            <div class="filecard">${icon('file')}<div><div class="fn">${esc(rec.fileName)}</div><div class="fm">Carregado a ${formatarData(rec.savedAt)} · ${esc(formatarPeriodo(rec.data.periodo))}</div></div>
-            <button class="btn btn-secondary btn-sm" data-act="upload">Substituir</button></div>
+        ${resumoHtml(A.view.resumo(rec, m))}
+        <div class="side-block">
+          <h3 class="sec-title">Ficheiro desta tab</h3>
+          <div class="filecard">${icon('file')}<div><div class="fn">${esc(rec.fileName)}</div><div class="fm">Carregado a ${formatarData(rec.savedAt)} · ${esc(formatarPeriodo(rec.data.periodo))}</div></div></div>
+          <div class="file-actions">
+            <button class="btn btn-secondary btn-sm" data-act="upload">${icon('upload')} Substituir</button>
+            <button class="btn btn-danger-ghost btn-sm" data-act="clear">${icon('trash')} Apagar dados desta tab</button>
           </div>
-        </details>
+        </div>
         <details class="fold">
-          <summary>${icon('chevron')} Como tirar este Excel</summary>
-          <div class="fold-body"><ol class="steps">${A.view.comoTirar.map(s => `<li>${s}</li>`).join('')}</ol></div>
+          <summary>${icon('chevron')} ${esc(A.view.importar.titulo)}</summary>
+          <div class="fold-body"><p class="import-txt">${esc(A.view.importar.texto)}</p></div>
         </details>
       </aside>
       <div class="panel-main">${A.view.html(rec, m)}</div>
@@ -206,7 +184,7 @@ function overview() {
     </section>
     <div class="ov-grid">${dados.map(({ b, rec, r, m }) => `
       <div class="ov-card" style="${tileVars(b)};--font-b:${b.font}, 'Noto Sans', sans-serif">
-        <div class="top"><span class="tile">${icon(b.icon)}</span><b>${esc(b.name)}</b>
+        <div class="top"><span class="tile mark">${logo(b.icon)}</span><b>${esc(b.name)}</b>
           ${r ? `<span class="badge ${r.nps >= m ? 'good' : 'bad'}">${r.nps >= m ? 'Meta atingida' : 'Abaixo da meta'}</span>` : '<span class="badge">Sem dados</span>'}</div>
         ${r ? `<div class="val"><b class="num">${fmt(r.nps)}</b><span class="muted">NPS · ${fmt(r.total)} respostas</span></div>
           <div class="compo" style="height:10px" aria-hidden="true"><div class="d" style="flex:${r.pctD}"></div><div class="n" style="flex:${r.pctN}"></div><div class="p" style="flex:${r.pctP};background:${b.colors.main}"></div></div>
@@ -263,17 +241,14 @@ function render() {
   } else {
     c.innerHTML = `
       <header class="brand-head">
-        <span class="tile" style="${tileVars(r.brand)}">${icon(r.brand.icon)}</span>
-        <div><h1>${esc(r.brand.name)}</h1><p>${r.brand.tabs.length} tabs · cada uma lê o seu Excel do Stats iQ</p></div>
-        <span class="hint">${icon('table')} Vista galeria · clica num cartão para abrir a tab</span>
+        <span class="tile mark">${logo(r.brand.icon)}</span>
+        <div><h1>${esc(r.brand.name)}</h1><p>${r.brand.tabs.length} tabs</p></div>
       </header>
-      ${galeria(r.brand, r.tab)}
       ${painel(r.brand, r.tab)}`;
     const A = ANALISES[r.tab.id];
     const rec = store.get(r.brand.id, r.tab.id);
     if (A && rec && r.brand.id === 'colibri') A.view.mount(rec, r.brand, meta(r.brand.id));
     ligarDrop();
-    document.querySelector('.gcard[aria-current]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   }
 }
 
@@ -325,6 +300,20 @@ document.addEventListener('click', async e => {
 });
 
 $('#file').addEventListener('change', e => { carregar(e.target.files[0]); e.target.value = ''; });
-addEventListener('hashchange', () => { erro = null; render(); window.scrollTo({ top: 0 }); });
+// Animação suave ao mudar de marca (View Transitions; sem suporte, só o fade de CSS)
+let marcaAtual = rota().brand?.id ?? null;
+addEventListener('hashchange', () => {
+  erro = null;
+  const nova = rota().brand?.id ?? null;
+  const mudouMarca = nova !== marcaAtual;
+  marcaAtual = nova;
+  animarSub = mudouMarca;
+  const reduzir = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const mudar = () => { render(); window.scrollTo({ top: 0 }); };
+  if (!reduzir && document.startViewTransition) {
+    document.documentElement.dataset.vt = mudouMarca ? 'marca' : 'tab';
+    document.startViewTransition(mudar).finished.finally(() => delete document.documentElement.dataset.vt);
+  } else mudar();
+});
 ligarTooltips();
 render();

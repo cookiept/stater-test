@@ -6,7 +6,7 @@ Protótipo do novo Stater: os resultados do Qualtrics Stats iQ das marcas do Gru
 
 ## O que funciona
 - Menu com todas as marcas e tabs, com os nomes do Stater atual.
-- **Colibri › NPS** e **Colibri › NPS por Causa Raiz**: carregam o Excel exportado do Stats iQ e mostram os gráficos, os pontos-chave e a tabela. Cada tab tem um botão "Ver com dados de exemplo".
+- **Colibri › NPS** e **Colibri › NPS por Causa Raiz**: carregam o Excel exportado do Stats iQ e mostram os gráficos, o resumo (regras do Stater atual) e a tabela. Cada tab tem um botão "Ver com dados de exemplo".
 - **Overview**: NPS de cada marca face ao objetivo, com a identidade do Grupo Brisa.
 - As outras tabs aparecem como "Disponível na versão final".
 
