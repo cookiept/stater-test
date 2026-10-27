@@ -299,11 +299,6 @@ document.addEventListener('click', async e => {
 });
 
 $('#file').addEventListener('change', e => { carregar(e.target.files[0]); e.target.value = ''; });
-addEventListener('hashchange', () => { erro = null; render(); window.scrollTo({ top: 0 }); }); };
-  if (!reduzir && document.startViewTransition) {
-    document.documentElement.dataset.vt = mudouMarca ? 'marca' : 'tab';
-    document.startViewTransition(mudar).finished.finally(() => delete document.documentElement.dataset.vt);
-  } else mudar();
-});
+addEventListener('hashchange', () => { erro = null; render(); window.scrollTo({ top: 0 }); });
 ligarTooltips();
 render();
