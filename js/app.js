@@ -34,6 +34,11 @@ const rota = () => {
   const tab = brand.tabs.find(x => x.id === t) || brand.tabs[0];
   return { brand, tab };
 };
+// Marcas com a lista de tabs aberta no menu (guardado só neste browser)
+const CHAVE_ABERTAS = 'stater:v1:ui:abertas';
+const abertas = new Set((() => { try { return JSON.parse(localStorage.getItem(CHAVE_ABERTAS)) || []; } catch { return []; } })());
+const guardarAbertas = () => { try { localStorage.setItem(CHAVE_ABERTAS, JSON.stringify([...abertas])); } catch {} };
+
 const ir = (b, t) => { location.hash = b ? `#/${b}/${t}` : '#/'; };
 
 // ---------- Menu lateral ----------
@@ -43,18 +48,22 @@ function tileVars(b) {
 
 function sidebar({ brand, tab }) {
   const itens = BRANDS.map(b => {
-    const aberta = brand?.id === b.id;
-    const sub = aberta ? `<div class="sb-sub-nav">${b.tabs.map(t => `
-        <a class="sb-tab" href="#/${b.id}/${t.id}" ${tab?.id === t.id ? 'aria-current="page"' : ''}>${icon(t.icon)}<span class="lbl" title="${esc(t.name)}">${esc(t.name)}</span>${store.get(b.id, t.id) ? '<span class="dot" title="Com dados"></span>' : ''}</a>`).join('')}</div>` : '';
-    return `<a class="sb-item${aberta ? ' is-open' : ''}" href="#/${b.id}/${b.tabs[0].id}" style="${tileVars(b)}" ${aberta ? 'aria-expanded="true"' : 'aria-expanded="false"'}>
-        <span class="tile mark">${logo(b.icon)}</span><span>${esc(b.name)}</span><span class="count">${b.tabs.length} tabs</span></a>${sub}`;
+    const atual = brand?.id === b.id;
+    const aberta = abertas.has(b.id);
+    const sub = aberta ? `<div class="sb-sub-nav" id="tabs-${b.id}">${b.tabs.map(t => `
+        <a class="sb-tab" href="#/${b.id}/${t.id}" ${atual && tab?.id === t.id ? 'aria-current="page"' : ''}>${icon(t.icon)}<span class="lbl" title="${esc(t.name)}">${esc(t.name)}</span>${store.get(b.id, t.id) ? '<span class="dot" title="Com dados"></span>' : ''}</a>`).join('')}</div>` : '';
+    return `<div class="sb-row" style="${tileVars(b)}">
+        <a class="sb-item${atual ? ' is-open' : ''}" href="#/${b.id}/${b.tabs[0].id}">
+        <span class="tile mark">${logo(b.icon)}</span><span class="nm" title="${esc(b.name)}">${esc(b.name)}</span><span class="count" title="${b.tabs.length} tabs">${b.tabs.length}</span></a>
+        <button class="sb-toggle" data-toggle="${b.id}" aria-expanded="${aberta}" aria-controls="tabs-${b.id}" aria-label="${aberta ? 'Fechar' : 'Abrir'} tabs de ${esc(b.name)}">${icon('chevron')}</button>
+      </div>${sub}`;
   }).join('');
   return `
     <div class="sb-head"><div class="sb-logo">${icon('bars')}</div><div><div class="sb-title">Stater</div><div class="sb-sub">CX · Grupo Brisa</div></div></div>
     <div>
       <div class="sb-label">Marcas</div>
       <nav class="sb-nav" aria-label="Marcas">
-        <a class="sb-item${!brand ? ' is-open' : ''}" href="#/" style="${tileVars(GROUP)}" ${!brand ? 'aria-current="page"' : ''}><span class="tile mark">${logo('grupo')}</span><span>Overview</span><span class="count">grupo</span></a>
+        <a class="sb-item sb-ov${!brand ? ' is-open' : ''}" href="#/" style="${tileVars(GROUP)}" ${!brand ? 'aria-current="page"' : ''}><span class="tile mark">${logo('grupo')}</span><span>Overview</span><span class="count">grupo</span></a>
         ${itens}
       </nav>
     </div>
@@ -278,6 +287,15 @@ function ligarDrop() {
 }
 
 document.addEventListener('click', async e => {
+  const tg = e.target.closest('[data-toggle]');
+  if (tg) {
+    const id = tg.dataset.toggle;
+    abertas.has(id) ? abertas.delete(id) : abertas.add(id);
+    guardarAbertas();
+    $('#sidebar').innerHTML = sidebar(rota());
+    $(`#sidebar [data-toggle="${id}"]`)?.focus();
+    return;
+  }
   const b = e.target.closest('[data-act]');
   if (!b || b.disabled) return;
   const r = rota();
@@ -299,6 +317,15 @@ document.addEventListener('click', async e => {
 });
 
 $('#file').addEventListener('change', e => { carregar(e.target.files[0]); e.target.value = ''; });
-addEventListener('hashchange', () => { erro = null; render(); window.scrollTo({ top: 0 }); });
+// Ao entrar numa marca, a lista de tabs dela abre-se
+const abrirAtual = () => { const b = rota().brand; if (b && !abertas.has(b.id)) { abertas.add(b.id); guardarAbertas(); } };
+let marcaAnterior = rota().brand?.id;
+addEventListener('hashchange', () => {
+  const b = rota().brand?.id;
+  if (b !== marcaAnterior) abrirAtual();
+  marcaAnterior = b;
+  erro = null; render(); window.scrollTo({ top: 0 });
+});
+abrirAtual();
 ligarTooltips();
 render();

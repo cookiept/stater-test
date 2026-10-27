@@ -67,6 +67,15 @@ button { cursor: pointer; }
 .sb-sub { font-size: 12px; line-height: 16px; color: var(--text-tertiary); }
 .sb-label { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-tertiary); padding: 0 10px; margin-bottom: 6px; }
 .sb-nav { display: flex; flex-direction: column; gap: 2px; }
+.sb-row { position: relative; }
+.sb-row .sb-item, .sb-item.sb-ov { padding-right: 40px; }
+.sb-item .nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sb-item .count { white-space: nowrap; flex-shrink: 0; }
+.sb-toggle { position: absolute; right: 6px; top: 50%; translate: 0 -50%; width: 26px; height: 26px; border: 0; border-radius: 8px; background: transparent; color: var(--text-tertiary); display: grid; place-items: center; cursor: pointer; }
+.sb-toggle:hover { background: var(--surface-low); color: var(--text-primary); }
+.sb-toggle:focus-visible { outline: 2px solid var(--tile-bg); outline-offset: 1px; }
+.sb-toggle .ico { width: 14px; height: 14px; transition: transform .12s ease; }
+.sb-toggle[aria-expanded="true"] .ico { transform: rotate(90deg); }
 .sb-item {
   display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 10px; border: 0; border-radius: 10px;
   background: transparent; text-align: left; color: var(--text-secondary); font-size: 14px; text-decoration: none;
