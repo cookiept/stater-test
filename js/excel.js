@@ -53,7 +53,7 @@ export function formatarPeriodo(p) {
   }
   if (p.inicio) return `Desde ${formatarData(p.inicio)}`;
   if (p.fim) return `Até ${formatarData(p.fim)}`;
-  return p.texto || 'Sem filtro de data';
+  return 'Sem filtro de data'; // filtro sem datas (ex.: linha "greater than or equal to" vazia)
 }
 
 export function extrairPeriodo(rows) {
