@@ -410,3 +410,6 @@ dialog .row { display: flex; gap: 8px; justify-content: flex-end; }
 .ov-eixo > span { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; font-weight: 600; color: #494949; text-align: left; line-height: 15px; padding: 0 4px; }
 .ov-eixo .tile { width: 22px; height: 22px; border-radius: 7px; padding: 3px; flex-shrink: 0; }
 @media (max-width: 900px) { .ov-eixo > span { flex-direction: column; text-align: center; font-size: 11px; } }
+.ov-bar-logo { position: absolute; z-index: 2; pointer-events: none; background: #fff; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,.18); display: grid; place-items: center; box-sizing: border-box; }
+.ov-bar-logo .logo { width: 100%; height: 100%; display: block; }
+#ch-ov { position: relative; }

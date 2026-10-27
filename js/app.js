@@ -1,14 +1,14 @@
 // Stater · protótipo. Uma página, menu de marcas à esquerda, cada tab lê o seu Excel.
-import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261027-1511';
-import { icon } from './icons.js?v=20261027-1511';
-import { logo } from './logos.js?v=20261027-1511';
-import { esc, info, ligarTooltips, toast, confirmar } from './ui.js?v=20261027-1511';
-import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261027-1511';
-import { resumoNps, fmt, sinal } from './stats.js?v=20261027-1511';
-import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261027-1511';
-import * as vNps from './views/nps.js?v=20261027-1511';
-import * as vCausas from './views/causas.js?v=20261027-1511';
-import { exemplos } from './exemplo.js?v=20261027-1511';
+import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261027-1520';
+import { icon } from './icons.js?v=20261027-1520';
+import { logo } from './logos.js?v=20261027-1520';
+import { esc, info, ligarTooltips, toast, confirmar } from './ui.js?v=20261027-1520';
+import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261027-1520';
+import { resumoNps, fmt, sinal } from './stats.js?v=20261027-1520';
+import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261027-1520';
+import * as vNps from './views/nps.js?v=20261027-1520';
+import * as vCausas from './views/causas.js?v=20261027-1520';
+import { exemplos } from './exemplo.js?v=20261027-1520';
 
 // Tabs que funcionam no protótipo
 const ANALISES = {
@@ -247,17 +247,31 @@ function overview() {
       <div class="card-head"><h3 id="h-ov">NPS vs meta por marca ${info('NPS vs meta', 'Barra colorida: NPS da tab NPS de cada marca. Barra cinzenta: meta definida em Editar metas. Marcas sem dados só mostram a meta.')}</h3>
         <div class="legend" style="margin:0 0 0 auto"><span><i style="background:conic-gradient(#005555 0 25%,#f96730 0 50%,#ffd552 0 75%,#008635 0)"></i>NPS (cor de cada marca)</span><span><i style="background:#d6dde3"></i>Meta</span></div></div>
       <div id="ch-ov" class="chart"></div>
-      <div class="ov-eixo" id="ov-eixo" aria-hidden="true">${BRANDS.map(b => `<span><span class="tile mark">${logo(b.icon)}</span>${esc(b.name)}</span>`).join('')}</div>
+      <div class="ov-eixo" id="ov-eixo" aria-hidden="true">${BRANDS.map(b => `<span>${esc(b.name)}</span>`).join('')}</div>
     </section>`;
 }
 
-// Põe a linha de nomes exatamente por baixo da área das barras
+// Põe a linha de nomes por baixo das barras e o logótipo de cada marca dentro da barra do NPS
 function alinharEixo(chart) {
   const e = document.getElementById('ov-eixo');
   if (!e) return;
   const g = chart.w.globals;
   e.style.marginLeft = `${g.translateX}px`;
   e.style.width = `${g.gridWidth}px`;
+  const el = chart.el;
+  el.querySelectorAll('.ov-bar-logo').forEach(n => n.remove());
+  const caixa = el.getBoundingClientRect();
+  el.querySelectorAll('.apexcharts-series[seriesName="NPS"] path.apexcharts-bar-area').forEach(p => {
+    const b = BRANDS[+p.getAttribute('j')];
+    const r = p.getBoundingClientRect();
+    if (!b || r.height < 30) return;
+    const tam = Math.min(r.width - 10, 56, r.height - 12);
+    const d = document.createElement('span');
+    d.className = 'ov-bar-logo';
+    d.innerHTML = logo(b.icon);
+    Object.assign(d.style, { width: `${tam}px`, height: `${tam}px`, padding: `${Math.round(tam * 0.18)}px`, left: `${r.left - caixa.left + (r.width - tam) / 2}px`, top: `${r.bottom - caixa.top - tam - 8}px` });
+    el.appendChild(d);
+  });
 }
 
 function montarOverview() {
@@ -265,7 +279,7 @@ function montarOverview() {
   // Duas barras por marca: NPS (cor da marca) e meta (cinzento claro), lado a lado
   desenhar(document.getElementById('ch-ov'), junta(base(GROUP), {
     // Os nomes saem do eixo e vão para a linha HTML #ov-eixo, com o logótipo antes do nome
-    chart: { type: 'bar', height: 300, events: { mounted: alinharEixo, updated: alinharEixo } },
+    chart: { type: 'bar', height: 300, events: { mounted: alinharEixo, updated: alinharEixo, animationEnd: alinharEixo } },
     series: [
       { name: 'NPS', data: dados.map(d => ({ x: d.b.name, y: d.r ? d.r.nps : null, fillColor: d.b.colors.main })) },
       { name: 'Meta', data: dados.map(d => ({ x: d.b.name, y: d.m, fillColor: '#d6dde3' })) },
