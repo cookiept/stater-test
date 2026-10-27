@@ -1,14 +1,14 @@
 // Stater · protótipo. Uma página, menu de marcas à esquerda, cada tab lê o seu Excel.
-import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261027-1437';
-import { icon } from './icons.js?v=20261027-1437';
-import { logo } from './logos.js?v=20261027-1437';
-import { esc, info, ligarTooltips, toast, confirmar, onda } from './ui.js?v=20261027-1437';
-import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261027-1437';
-import { resumoNps, fmt } from './stats.js?v=20261027-1437';
-import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261027-1437';
-import * as vNps from './views/nps.js?v=20261027-1437';
-import * as vCausas from './views/causas.js?v=20261027-1437';
-import { exemplos } from './exemplo.js?v=20261027-1437';
+import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261027-1445';
+import { icon } from './icons.js?v=20261027-1445';
+import { logo } from './logos.js?v=20261027-1445';
+import { esc, info, ligarTooltips, toast, confirmar, onda } from './ui.js?v=20261027-1445';
+import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261027-1445';
+import { resumoNps, fmt } from './stats.js?v=20261027-1445';
+import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261027-1445';
+import * as vNps from './views/nps.js?v=20261027-1445';
+import * as vCausas from './views/causas.js?v=20261027-1445';
+import { exemplos } from './exemplo.js?v=20261027-1445';
 
 // Tabs que funcionam no protótipo
 const ANALISES = {
@@ -186,6 +186,7 @@ function overview() {
   return `
     <section class="ov-hero">
       ${onda(7)}
+      <img class="ov-logo" src="assets/grupo-brisa-branco.png" alt="Grupo Brisa" width="640" height="498">
       <div style="position:relative">
         <h1>Overview do Grupo Brisa</h1>
         <p>O NPS de cada marca face à sua meta. Os números vêm da tab NPS de cada marca; as metas definem-se aqui.</p>
