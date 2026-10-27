@@ -15,6 +15,8 @@ const ANALISES = {
   nps: { parse: parseNps, view: vNps },
   'causa-raiz': { parse: parseCausas, view: vCausas },
 };
+// Uma tab funciona se tiver análise e estiver marcada como live em brands.js
+const ativa = (b, t) => !!(b && t && t.live && ANALISES[t.id]);
 
 // ---------- Guardar no browser ----------
 const chave = (b, t) => `stater:v1:${b}:${t}`;
@@ -75,7 +77,7 @@ function sidebar({ brand, tab }) {
 // ---------- Barra de topo ----------
 function topbar({ brand, tab }) {
   const rec = brand && tab ? store.get(brand.id, tab.id) : null;
-  const live = brand && tab && ANALISES[tab.id] && brand.id === 'colibri';
+  const live = ativa(brand, tab);
   const crumbs = brand
     ? `<span>Stater</span>${icon('chevron')}<span>${esc(brand.name)}</span>${icon('chevron')}<b>${esc(tab.name)}</b>`
     : `<span>Stater</span>${icon('chevron')}<b>Overview</b>`;
@@ -112,8 +114,8 @@ function painelEmBreve(brand, tab) {
   return `<div class="soon-panel">
     <div class="big">${icon(tab.icon)}</div>
     <h3>Disponível na versão final</h3>
-    <p>Neste protótipo só funcionam as tabs <b>NPS</b> e <b>NPS por Causa Raiz</b> da Colibri. Esta tab mantém o nome e as regras do Stater atual e vai ganhar o mesmo aspeto.</p>
-    <a class="btn btn-secondary" href="#/colibri/nps">${icon('bars')} Ver a Colibri › NPS</a>
+    <p>Neste protótipo funcionam a tab <b>NPS</b> de cada marca (menos a Nedlinq) e a <b>NPS por Causa Raiz</b> da Colibri. Esta tab mantém o nome e as regras do Stater atual e vai ganhar o mesmo aspeto.</p>
+    ${ativa(brand, brand.tabs[0]) ? `<a class="btn btn-secondary" href="#/${brand.id}/${brand.tabs[0].id}">${icon('bars')} Ver ${esc(brand.name)} › NPS</a>` : ''}
   </div>`;
 }
 
@@ -131,7 +133,7 @@ function resumoHtml(r) {
 
 function painel(brand, tab) {
   const A = ANALISES[tab.id];
-  const live = A && brand.id === 'colibri';
+  const live = ativa(brand, tab);
   const rec = store.get(brand.id, tab.id);
   const head = (chipsHtml = '') => `
     <div class="panel-head">
@@ -199,7 +201,7 @@ function overview() {
           <div class="muted">${esc(formatarPeriodo(rec.data.periodo))}${rec.exemplo ? ' · dados de exemplo' : ''}</div>`
         : `<div class="wait">A aguardar dados da tab NPS</div>`}
         <div class="meta"><label for="meta-${b.id}">Objetivo NPS</label><input id="meta-${b.id}" data-meta="${b.id}" inputmode="numeric" value="${m}" aria-describedby="meta-h">
-          ${b.id === 'colibri' ? `<a class="btn btn-ghost btn-sm" href="#/colibri/nps" style="margin-left:auto">Abrir ${icon('chevron')}</a>` : ''}</div>
+          ${ativa(b, b.tabs[0]) ? `<a class="btn btn-ghost btn-sm" href="#/${b.id}/nps" style="margin-left:auto">Abrir ${icon('chevron')}</a>` : ''}</div>
       </div>`).join('')}
     </div>
     <span id="meta-h" class="sr-only">Número de −100 a 100. Guarda ao sair do campo.</span>
@@ -255,7 +257,7 @@ function render() {
       ${painel(r.brand, r.tab)}`;
     const A = ANALISES[r.tab.id];
     const rec = store.get(r.brand.id, r.tab.id);
-    if (A && rec && r.brand.id === 'colibri') A.view.mount(rec, r.brand, meta(r.brand.id));
+    if (rec && ativa(r.brand, r.tab)) A.view.mount(rec, r.brand, meta(r.brand.id));
     ligarDrop();
   }
 }

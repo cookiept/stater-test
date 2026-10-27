@@ -49,7 +49,7 @@ export const BRANDS = [
     colors: { darkest: '#5f1c04', dark: '#a13a13', main: '#f96730', light: '#fc9771', lightest: '#febfa7', on: '#1a1a1a', ink: '#a13a13' },
     chart: ['#f96730', '#fc9771', '#a13a13', '#5f1c04', '#febfa7'],
     tabs: [
-      { id: 'nps', name: 'NPS', icon: 'bars' },
+      { id: 'nps', name: 'NPS', icon: 'bars', live: true },
       { id: 'inspecao', name: 'NPS x Resultado Inspeção', icon: 'check' },
       { id: 'driver-relate', name: 'NPS por Driver', icon: 'wheel' },
       { id: 'causa-raiz', name: 'NPS por Causa Raiz', icon: 'search' },
@@ -64,7 +64,7 @@ export const BRANDS = [
     colors: { darkest: '#4b3c14', dark: '#b39321', main: '#ffd552', light: '#ffe4a9', lightest: '#ffeecb', on: '#1a1a1a', ink: '#7a6416' },
     chart: ['#e0b52e', '#ffd552', '#4b3c14', '#b39321', '#ffe4a9'],
     tabs: [
-      { id: 'nps', name: 'NPS', icon: 'bars' },
+      { id: 'nps', name: 'NPS', icon: 'bars', live: true },
       { id: 'inspecao', name: 'NPS x Resultado Inspeção', icon: 'check' },
       { id: 'segmento', name: 'Segmento', icon: 'pie' },
       { id: 'driver-relate', name: 'NPS por Driver', icon: 'wheel' },
@@ -81,7 +81,7 @@ export const BRANDS = [
     colors: { darkest: '#074257', dark: '#0f6381', main: '#14789c', light: '#8fd2f8', lightest: '#c5e5fb', on: '#ffffff', ink: '#0f6381' },
     chart: ['#14789c', '#8fd2f8', '#074257', '#0f6381', '#c5e5fb'],
     tabs: [
-      { id: 'nps', name: 'NPS', icon: 'bars' },
+      { id: 'nps', name: 'NPS', icon: 'bars', live: true },
       { id: 'driver-relate', name: 'NPS por Driver', icon: 'wheel' },
       { id: 'causa-raiz', name: 'NPS por Causa Raiz', icon: 'search' },
       { id: 'topics', name: 'NPS por Topics (Text iQ)', icon: 'tag' },
@@ -95,7 +95,7 @@ export const BRANDS = [
     colors: { darkest: '#004921', dark: '#007735', main: '#008635', light: '#67e982', lightest: '#bffcc8', on: '#ffffff', ink: '#007735' },
     chart: ['#008635', '#67e982', '#004921', '#d98e69', '#bffcc8'],
     tabs: [
-      { id: 'nps', name: 'NPS', icon: 'bars' },
+      { id: 'nps', name: 'NPS', icon: 'bars', live: true },
       { id: 'topics', name: 'NPS por Topics (Text iQ)', icon: 'tag' },
       { id: 'causas', name: 'NPS por Causa Raiz (Text iQ)', icon: 'search' },
       { id: 'ces', name: 'CES', icon: 'gauge' },

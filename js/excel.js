@@ -57,6 +57,7 @@ export function formatarPeriodo(p) {
 }
 
 export function extrairPeriodo(rows) {
+  let semData = null; // filtro sem datas (ex.: "greater than or equal to " vazio): só serve se não houver outro
   for (const r of rows.slice(0, 40)) {
     for (const c of r || []) {
       const s = texto(c);
@@ -64,13 +65,14 @@ export function extrairPeriodo(rows) {
       const encontradas = s.match(/\d{4}-\d{1,2}-\d{1,2}|\d{1,2}\/\d{1,2}\/\d{4}|\d{1,2}\s+[A-Za-zç]{3}[a-zç]*\.?,?\s+\d{4}|[A-Za-z]{3}[a-z]*\.?\s+\d{1,2},?\s+\d{4}/g) || [];
       const datas = encontradas.map(lerData).filter(Boolean);
       if (/between/i.test(s) && datas.length >= 2) return { inicio: datas[0].toISOString(), fim: datas[1].toISOString(), texto: s };
-      if (/after|since|≥|>=/i.test(s) && datas[0]) return { inicio: datas[0].toISOString(), texto: s };
-      if (/before|until|≤|<=/i.test(s) && datas[0]) return { fim: datas[0].toISOString(), texto: s };
+      if (!datas.length) { semData ??= { texto: s.trim() }; continue; }
+      if (/after|since|greater|≥|>=/i.test(s) && datas[0]) return { inicio: datas[0].toISOString(), texto: s };
+      if (/before|until|less|≤|<=/i.test(s) && datas[0]) return { fim: datas[0].toISOString(), texto: s };
       if (datas.length >= 2) return { inicio: datas[0].toISOString(), fim: datas[1].toISOString(), texto: s };
       return { texto: s };
     }
   }
-  return null;
+  return semData;
 }
 
 // ---------- NPS: distribuição 0–10 (Stats iQ "Describe" de NPS numérico) ----------
