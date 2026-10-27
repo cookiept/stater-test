@@ -1,14 +1,14 @@
 // Stater · protótipo. Uma página, menu de marcas à esquerda, cada tab lê o seu Excel.
-import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261027-1449';
-import { icon } from './icons.js?v=20261027-1449';
-import { logo } from './logos.js?v=20261027-1449';
-import { esc, info, ligarTooltips, toast, confirmar } from './ui.js?v=20261027-1449';
-import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261027-1449';
-import { resumoNps, fmt, sinal } from './stats.js?v=20261027-1449';
-import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261027-1449';
-import * as vNps from './views/nps.js?v=20261027-1449';
-import * as vCausas from './views/causas.js?v=20261027-1449';
-import { exemplos } from './exemplo.js?v=20261027-1449';
+import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261027-1509';
+import { icon } from './icons.js?v=20261027-1509';
+import { logo } from './logos.js?v=20261027-1509';
+import { esc, info, ligarTooltips, toast, confirmar } from './ui.js?v=20261027-1509';
+import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261027-1509';
+import { resumoNps, fmt, sinal } from './stats.js?v=20261027-1509';
+import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261027-1509';
+import * as vNps from './views/nps.js?v=20261027-1509';
+import * as vCausas from './views/causas.js?v=20261027-1509';
+import { exemplos } from './exemplo.js?v=20261027-1509';
 
 // Tabs que funcionam no protótipo
 const ANALISES = {
@@ -244,22 +244,32 @@ function overview() {
       </div>`).join('')}
     </div>
     <section class="card" style="background:#fff" aria-labelledby="h-ov">
-      <div class="card-head"><h3 id="h-ov">NPS vs objetivo por marca ${info('NPS vs objetivo', 'Barra: NPS da tab NPS de cada marca. Traço: meta definida em Editar metas. Marcas sem dados ficam vazias.')}</h3></div>
+      <div class="card-head"><h3 id="h-ov">NPS vs meta por marca ${info('NPS vs meta', 'Barra colorida: NPS da tab NPS de cada marca. Barra cinzenta: meta definida em Editar metas. Marcas sem dados só mostram a meta.')}</h3>
+        <div class="legend" style="margin:0 0 0 auto"><span><i style="background:conic-gradient(#005555 0 25%,#f96730 0 50%,#ffd552 0 75%,#008635 0)"></i>NPS (cor de cada marca)</span><span><i style="background:#d6dde3"></i>Meta</span></div></div>
       <div id="ch-ov" class="chart"></div>
     </section>`;
 }
 
 function montarOverview() {
   const dados = BRANDS.map(b => { const rec = store.get(b.id, 'nps'); return { b, r: rec ? resumoNps(rec.data.contagens) : null, m: meta(b.id) }; });
+  // Duas barras por marca: NPS (cor da marca) e meta (cinzento claro), lado a lado
   desenhar(document.getElementById('ch-ov'), junta(base(GROUP), {
-    chart: { type: 'bar', height: 300 },
-    series: [{ name: 'NPS', data: dados.map(d => ({ x: d.b.name, y: d.r ? d.r.nps : null, fillColor: d.b.colors.main, goals: [{ name: 'Objetivo', value: d.m, strokeHeight: 4, strokeWidth: 36, strokeLineCap: 'round', strokeColor: '#1a1a1a' }] })) }],
-    plotOptions: { bar: { columnWidth: '46%', borderRadius: 6, borderRadiusApplication: 'end', dataLabels: { position: 'top' } } },
-    dataLabels: { enabled: true, offsetY: -20, formatter: v => (v == null ? '' : fmt(v)), style: { fontSize: '13px', fontWeight: 700, colors: ['#1a1a1a'] } },
+    chart: { type: 'bar', height: 320 },
+    series: [
+      { name: 'NPS', data: dados.map(d => ({ x: d.b.name, y: d.r ? d.r.nps : null, fillColor: d.b.colors.main })) },
+      { name: 'Meta', data: dados.map(d => ({ x: d.b.name, y: d.m, fillColor: '#d6dde3' })) },
+    ],
+    legend: { show: false },
+    plotOptions: { bar: { columnWidth: '62%', borderRadius: 6, borderRadiusApplication: 'end', dataLabels: { position: 'top' } } },
+    stroke: { show: true, width: 4, colors: ['transparent'] },
+    dataLabels: {
+      enabled: true, offsetY: -20, formatter: v => (v == null ? '' : fmt(v)),
+      style: { fontSize: '12px', fontWeight: 700, colors: ['#1a1a1a', '#767676'] },
+    },
     yaxis: { min: -20, max: 100, tickAmount: 4 },
     xaxis: { axisBorder: { show: false }, axisTicks: { show: false }, labels: { style: { fontSize: '12px', fontWeight: 600, colors: '#494949' } } },
-    tooltip: { y: { formatter: (v, { dataPointIndex }) => (v == null ? 'sem dados' : `${fmt(v)} (objetivo ${dados[dataPointIndex].m})`) } },
-    noData: { text: 'Sem dados' },
+    tooltip: { shared: true, intersect: false, y: { formatter: v => (v == null ? 'sem dados' : fmt(v)) } },
+    states: { hover: { filter: { type: 'darken', value: 0.9 } } },
   }));
 }
 
