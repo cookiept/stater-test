@@ -1,14 +1,14 @@
 // Stater · protótipo. Uma página, menu de marcas à esquerda, cada tab lê o seu Excel.
-import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261027-1447';
-import { icon } from './icons.js?v=20261027-1447';
-import { logo } from './logos.js?v=20261027-1447';
-import { esc, info, ligarTooltips, toast, confirmar, onda } from './ui.js?v=20261027-1447';
-import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261027-1447';
-import { resumoNps, fmt, sinal } from './stats.js?v=20261027-1447';
-import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261027-1447';
-import * as vNps from './views/nps.js?v=20261027-1447';
-import * as vCausas from './views/causas.js?v=20261027-1447';
-import { exemplos } from './exemplo.js?v=20261027-1447';
+import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261027-1449';
+import { icon } from './icons.js?v=20261027-1449';
+import { logo } from './logos.js?v=20261027-1449';
+import { esc, info, ligarTooltips, toast, confirmar } from './ui.js?v=20261027-1449';
+import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261027-1449';
+import { resumoNps, fmt, sinal } from './stats.js?v=20261027-1449';
+import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261027-1449';
+import * as vNps from './views/nps.js?v=20261027-1449';
+import * as vCausas from './views/causas.js?v=20261027-1449';
+import { exemplos } from './exemplo.js?v=20261027-1449';
 
 // Tabs que funcionam no protótipo
 const ANALISES = {
@@ -216,16 +216,18 @@ function overview() {
   const totalResp = comDados.reduce((a, d) => a + d.r.total, 0);
   return `
     <section class="ov-hero">
-      ${onda(7)}
-      <img class="ov-logo" src="assets/grupo-brisa-branco.png" alt="Grupo Brisa" width="640" height="498">
-      <div style="position:relative">
+      <span class="ov-blob o" aria-hidden="true"></span><span class="ov-blob l" aria-hidden="true"></span><span class="ov-blob g" aria-hidden="true"></span><span class="ov-blob c" aria-hidden="true"></span>
+      <div class="ov-txt">
         <h1>Overview do Grupo Brisa</h1>
         <p>O NPS de cada marca face à sua meta. Os números vêm da tab NPS de cada marca; as metas definem-se aqui.</p>
       </div>
-      <div class="stat"><b class="num">${comDados.length}/${BRANDS.length}</b><span>marcas com dados${totalResp ? ` · ${fmt(totalResp)} respostas` : ''}</span></div>
+      <img class="ov-logo" src="assets/grupo-brisa-branco.png" alt="Grupo Brisa" width="640" height="498">
+      <span class="ov-faixa" aria-hidden="true"></span>
     </section>
     <div class="ov-bar">
       <h2>Marcas</h2>
+      <span class="muted">${comDados.length} de ${BRANDS.length} com dados${totalResp ? ` · ${fmt(totalResp)} respostas` : ''}</span>
+      <span class="sep"></span>
       ${dataMetas() ? `<span class="muted">Metas atualizadas a ${formatarData(dataMetas())}</span>` : ''}
       <button class="btn btn-secondary btn-sm" data-act="metas">${icon('target')} Editar metas</button>
     </div>

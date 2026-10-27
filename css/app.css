@@ -302,7 +302,7 @@ a.ov-card:hover { box-shadow: var(--shadow-2); transform: translateY(-2px); }
 .ov-card .meta .ico { width: 14px; height: 14px; }
 .ov-card .meta b { color: var(--text-primary); }
 .ov-bar { display: flex; align-items: center; gap: 12px; margin-bottom: -8px; }
-.ov-bar h2 { margin: 0; font-size: 18px; margin-right: auto; }
+.ov-bar h2 { margin: 0; font-size: 18px; }
 .ov-bar .muted { font-size: 12px; }
 .dlg-metas { max-width: 460px; width: calc(100% - 32px); }
 .metas-lista { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
@@ -311,15 +311,6 @@ a.ov-card:hover { box-shadow: var(--shadow-2); transform: translateY(-2px); }
 .meta-linha .tile { width: 32px; height: 32px; border-radius: 10px; }
 .meta-linha input { height: 36px; border: 1px solid var(--stroke-strong); border-radius: 10px; padding: 0 10px; text-align: right; font: 600 15px var(--font-ui); color: var(--text-primary); }
 .meta-linha input:focus { outline: 2px solid var(--brand); outline-offset: 1px; }
-.ov-hero { background: linear-gradient(135deg, var(--brand-darkest), var(--brand)); color: #fff; border-radius: 22px; padding: 26px 28px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 28px; align-items: center; position: relative; overflow: hidden; }
-.ov-logo { position: relative; height: 112px; width: auto; display: block; }
-@media (max-width: 900px) { .ov-hero { grid-template-columns: auto minmax(0, 1fr); } .ov-hero .stat { grid-column: 1 / -1; text-align: left; } .ov-logo { height: 72px; } }
-.ov-hero h1 { margin: 0; font-size: 32px; line-height: 40px; letter-spacing: -.6px; }
-.ov-hero p { margin: 6px 0 0; color: rgba(255,255,255,.8); max-width: 560px; }
-.ov-hero svg.wave { position: absolute; right: 0; bottom: 0; width: 60%; height: 100%; opacity: .18; }
-.ov-hero .stat { position: relative; text-align: right; }
-.ov-hero .stat b { font-size: 44px; line-height: 48px; font-weight: 700; }
-.ov-hero .stat span { display: block; font-size: 12px; color: rgba(255,255,255,.75); }
 
 /* Toast */
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #494949; color: #fff; padding: 12px 18px; border-radius: 10px; font-size: 14px; box-shadow: var(--shadow-3); z-index: 60; display: flex; gap: 8px; align-items: center; }
@@ -393,3 +384,23 @@ dialog .row { display: flex; gap: 8px; justify-content: flex-end; }
    Como no Linear, Notion e Vercel: o conteúdo troca na hora, sem fade nem deslize.
    Só o item ativo do menu muda de cor, de forma rápida. */
 .sb-item, .sb-tab, .tile { transition: background-color .12s ease, color .12s ease, box-shadow .12s ease; }
+
+/* ---------- Banner da Overview (cores do logótipo do Grupo Brisa) ---------- */
+.ov-hero { position: relative; overflow: hidden; isolation: isolate; border-radius: 22px; padding: 34px 36px 38px; min-height: 190px;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 32px; align-items: center; color: #fff;
+  background: radial-gradient(120% 140% at 0% 0%, #0f6381 0%, #074257 55%, #052f3e 100%); }
+.ov-txt { position: relative; }
+.ov-hero h1 { margin: 0; font-size: 34px; line-height: 42px; letter-spacing: -.6px; }
+.ov-hero p { margin: 8px 0 0; color: rgba(255,255,255,.82); max-width: 560px; font-size: 15px; line-height: 23px; }
+.ov-logo { position: relative; height: 128px; width: auto; display: block; filter: drop-shadow(0 6px 18px rgba(0,0,0,.25)); }
+.ov-blob { position: absolute; z-index: -1; border-radius: 50%; filter: blur(48px); opacity: .55; }
+.ov-blob.o { width: 200px; height: 140px; left: 38%; top: -100px; background: #f49a1e; opacity: .28; }
+.ov-blob.l { width: 220px; height: 160px; left: 58%; bottom: -130px; background: #b2bb1e; opacity: .3; }
+.ov-blob.g { width: 260px; height: 200px; left: -80px; bottom: -150px; background: #00853f; opacity: .45; }
+.ov-blob.c { width: 240px; height: 180px; left: 18%; top: -130px; background: #00b2dc; opacity: .35; }
+.ov-hero::after { content: ""; position: absolute; z-index: -1; right: -60px; top: 50%; width: 380px; height: 380px; translate: 0 -50%; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 65%); }
+.ov-faixa { position: absolute; left: 0; right: 0; bottom: 0; height: 6px;
+  background: linear-gradient(90deg, #f49a1e 0 25%, #b2bb1e 25% 50%, #00853f 50% 75%, #00b2dc 75% 100%); }
+.ov-bar .sep { margin-right: auto; }
+@media (max-width: 900px) { .ov-hero { grid-template-columns: 1fr; padding: 24px 22px 30px; } .ov-logo { height: 84px; grid-row: 1; } .ov-hero h1 { font-size: 26px; line-height: 32px; } }
