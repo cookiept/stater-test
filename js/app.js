@@ -317,15 +317,7 @@ document.addEventListener('click', async e => {
 });
 
 $('#file').addEventListener('change', e => { carregar(e.target.files[0]); e.target.value = ''; });
-// Ao entrar numa marca, a lista de tabs dela abre-se
-const abrirAtual = () => { const b = rota().brand; if (b && !abertas.has(b.id)) { abertas.add(b.id); guardarAbertas(); } };
-let marcaAnterior = rota().brand?.id;
-addEventListener('hashchange', () => {
-  const b = rota().brand?.id;
-  if (b !== marcaAnterior) abrirAtual();
-  marcaAnterior = b;
-  erro = null; render(); window.scrollTo({ top: 0 });
-});
-abrirAtual();
+// As tabs de cada marca só abrem e fecham pela seta do menu
+addEventListener('hashchange', () => { erro = null; render(); window.scrollTo({ top: 0 }); });
 ligarTooltips();
 render();
