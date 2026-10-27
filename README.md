@@ -23,3 +23,10 @@ Os Excel são lidos só no browser de quem os abre e ficam guardados nesse brows
 - `vendor/`: ApexCharts 8.5.0. SheetJS 0.20.3 vem de cdn.sheetjs.com.
 
 Sem passo de build: abre com qualquer servidor estático (ex.: `npx serve .`).
+
+## Versão dos ficheiros (cache)
+O GitHub Pages guarda os ficheiros em cache durante 10 minutos. Para que todos vejam logo a versão nova, cada publicação muda o número `?v=` nos `import` dos ficheiros `js/` e no `index.html`:
+
+```bash
+V=$(date +%Y%m%d-%H%M); sed -i -E "s#(from '\.{1,2}/[^']+\.js)(\?v=[^']*)?'#\1?v=$V'#" js/*.js js/views/*.js; sed -i -E "s#(css/app\.css|js/app\.js)(\?v=[^\"]*)?\"#\1?v=$V\"#g" index.html
+```
