@@ -27,7 +27,6 @@ const meta = id => { const v = parseInt(localStorage.getItem(`stater:v1:meta:${i
 
 // ---------- Estado ----------
 let erro = null;
-let animarSub = false; // só anima a lista de tabs quando se muda de marca
 const rota = () => {
   const [, b, t] = location.hash.replace(/^#\/?/, '#/').split('/');
   const brand = brandById(b);
@@ -45,7 +44,7 @@ function tileVars(b) {
 function sidebar({ brand, tab }) {
   const itens = BRANDS.map(b => {
     const aberta = brand?.id === b.id;
-    const sub = aberta ? `<div class="sb-sub-nav${animarSub ? ' anim' : ''}">${b.tabs.map(t => `
+    const sub = aberta ? `<div class="sb-sub-nav">${b.tabs.map(t => `
         <a class="sb-tab" href="#/${b.id}/${t.id}" ${tab?.id === t.id ? 'aria-current="page"' : ''}>${icon(t.icon)}<span class="lbl" title="${esc(t.name)}">${esc(t.name)}</span>${store.get(b.id, t.id) ? '<span class="dot" title="Com dados"></span>' : ''}</a>`).join('')}</div>` : '';
     return `<a class="sb-item${aberta ? ' is-open' : ''}" href="#/${b.id}/${b.tabs[0].id}" style="${tileVars(b)}" ${aberta ? 'aria-expanded="true"' : 'aria-expanded="false"'}>
         <span class="tile mark">${logo(b.icon)}</span><span>${esc(b.name)}</span><span class="count">${b.tabs.length} tabs</span></a>${sub}`;
@@ -300,16 +299,7 @@ document.addEventListener('click', async e => {
 });
 
 $('#file').addEventListener('change', e => { carregar(e.target.files[0]); e.target.value = ''; });
-// Animação suave ao mudar de marca (View Transitions; sem suporte, só o fade de CSS)
-let marcaAtual = rota().brand?.id ?? null;
-addEventListener('hashchange', () => {
-  erro = null;
-  const nova = rota().brand?.id ?? null;
-  const mudouMarca = nova !== marcaAtual;
-  marcaAtual = nova;
-  animarSub = mudouMarca;
-  const reduzir = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const mudar = () => { render(); window.scrollTo({ top: 0 }); };
+addEventListener('hashchange', () => { erro = null; render(); window.scrollTo({ top: 0 }); }); };
   if (!reduzir && document.startViewTransition) {
     document.documentElement.dataset.vt = mudouMarca ? 'marca' : 'tab';
     document.startViewTransition(mudar).finished.finally(() => delete document.documentElement.dataset.vt);

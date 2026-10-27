@@ -367,16 +367,7 @@ dialog .row { display: flex; gap: 8px; justify-content: flex-end; }
 .btn-danger-ghost:hover { background: #fff3f1; }
 .import-txt { margin: 0; font-size: 13px; line-height: 20px; color: var(--text-secondary); }
 
-/* ---------- Animação entre marcas ---------- */
-.content { view-transition-name: conteudo; }
-.topbar { view-transition-name: topo; }
-@keyframes sair { to { opacity: 0; } }
-@keyframes subir { from { opacity: 0; transform: translateY(4px); } }
-::view-transition-old(conteudo) { animation: sair 90ms ease-out both; }
-::view-transition-new(conteudo) { animation: subir 160ms cubic-bezier(.2,0,0,1) both; }
-html[data-vt="tab"]::view-transition-new(conteudo) { animation-duration: 120ms; }
-::view-transition-old(topo), ::view-transition-new(topo) { animation-duration: 100ms; }
-.sb-sub-nav.anim { animation: abrir 150ms cubic-bezier(.2,0,0,1) both; transform-origin: top; }
-@keyframes abrir { from { opacity: 0; transform: translateY(-2px); } }
-.tile, .sb-item, .btn-primary { transition: background-color .15s ease, color .15s ease, box-shadow .15s ease; }
-@media (prefers-reduced-motion: reduce) { ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; } }
+/* ---------- Mudança de página ----------
+   Como no Linear, Notion e Vercel: o conteúdo troca na hora, sem fade nem deslize.
+   Só o item ativo do menu muda de cor, de forma rápida. */
+.sb-item, .sb-tab, .tile { transition: background-color .12s ease, color .12s ease, box-shadow .12s ease; }
