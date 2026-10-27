@@ -1,14 +1,14 @@
 // Stater · protótipo. Uma página, menu de marcas à esquerda, cada tab lê o seu Excel.
-import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261027-1509';
-import { icon } from './icons.js?v=20261027-1509';
-import { logo } from './logos.js?v=20261027-1509';
-import { esc, info, ligarTooltips, toast, confirmar } from './ui.js?v=20261027-1509';
-import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261027-1509';
-import { resumoNps, fmt, sinal } from './stats.js?v=20261027-1509';
-import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261027-1509';
-import * as vNps from './views/nps.js?v=20261027-1509';
-import * as vCausas from './views/causas.js?v=20261027-1509';
-import { exemplos } from './exemplo.js?v=20261027-1509';
+import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261027-1511';
+import { icon } from './icons.js?v=20261027-1511';
+import { logo } from './logos.js?v=20261027-1511';
+import { esc, info, ligarTooltips, toast, confirmar } from './ui.js?v=20261027-1511';
+import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261027-1511';
+import { resumoNps, fmt, sinal } from './stats.js?v=20261027-1511';
+import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261027-1511';
+import * as vNps from './views/nps.js?v=20261027-1511';
+import * as vCausas from './views/causas.js?v=20261027-1511';
+import { exemplos } from './exemplo.js?v=20261027-1511';
 
 // Tabs que funcionam no protótipo
 const ANALISES = {
@@ -247,14 +247,25 @@ function overview() {
       <div class="card-head"><h3 id="h-ov">NPS vs meta por marca ${info('NPS vs meta', 'Barra colorida: NPS da tab NPS de cada marca. Barra cinzenta: meta definida em Editar metas. Marcas sem dados só mostram a meta.')}</h3>
         <div class="legend" style="margin:0 0 0 auto"><span><i style="background:conic-gradient(#005555 0 25%,#f96730 0 50%,#ffd552 0 75%,#008635 0)"></i>NPS (cor de cada marca)</span><span><i style="background:#d6dde3"></i>Meta</span></div></div>
       <div id="ch-ov" class="chart"></div>
+      <div class="ov-eixo" id="ov-eixo" aria-hidden="true">${BRANDS.map(b => `<span><span class="tile mark">${logo(b.icon)}</span>${esc(b.name)}</span>`).join('')}</div>
     </section>`;
+}
+
+// Põe a linha de nomes exatamente por baixo da área das barras
+function alinharEixo(chart) {
+  const e = document.getElementById('ov-eixo');
+  if (!e) return;
+  const g = chart.w.globals;
+  e.style.marginLeft = `${g.translateX}px`;
+  e.style.width = `${g.gridWidth}px`;
 }
 
 function montarOverview() {
   const dados = BRANDS.map(b => { const rec = store.get(b.id, 'nps'); return { b, r: rec ? resumoNps(rec.data.contagens) : null, m: meta(b.id) }; });
   // Duas barras por marca: NPS (cor da marca) e meta (cinzento claro), lado a lado
   desenhar(document.getElementById('ch-ov'), junta(base(GROUP), {
-    chart: { type: 'bar', height: 320 },
+    // Os nomes saem do eixo e vão para a linha HTML #ov-eixo, com o logótipo antes do nome
+    chart: { type: 'bar', height: 300, events: { mounted: alinharEixo, updated: alinharEixo } },
     series: [
       { name: 'NPS', data: dados.map(d => ({ x: d.b.name, y: d.r ? d.r.nps : null, fillColor: d.b.colors.main })) },
       { name: 'Meta', data: dados.map(d => ({ x: d.b.name, y: d.m, fillColor: '#d6dde3' })) },
@@ -267,7 +278,7 @@ function montarOverview() {
       style: { fontSize: '12px', fontWeight: 700, colors: ['#1a1a1a', '#767676'] },
     },
     yaxis: { min: -20, max: 100, tickAmount: 4 },
-    xaxis: { axisBorder: { show: false }, axisTicks: { show: false }, labels: { style: { fontSize: '12px', fontWeight: 600, colors: '#494949' } } },
+    xaxis: { axisBorder: { show: false }, axisTicks: { show: false }, labels: { show: false } },
     tooltip: { shared: true, intersect: false, y: { formatter: v => (v == null ? 'sem dados' : fmt(v)) } },
     states: { hover: { filter: { type: 'darken', value: 0.9 } } },
   }));
