@@ -1,12 +1,12 @@
 // Tab "Todos ao molho" (Tabela única de causas): junta as causas raiz de todos os drivers numa só tabela.
 // Cada driver é um Excel "Relate" de Group NPS com a causa raiz desse driver; carregam-se vários de uma vez.
-import { enriquecerCausas, comZeros, fmt, sinal, destaques, causasFiaveis } from '../stats.js?v=20261028-1641';
-import { base, junta, desenhar } from '../charts.js?v=20261028-1641';
-import { info, esc, def, btnPptx, faixa } from '../ui.js?v=20261028-1641';
-import { icon } from '../icons.js?v=20261028-1641';
-import { formatarPeriodo } from '../excel.js?v=20261028-1641';
-import { npsGlobal, destaquesHtml, linhas, tabelaPptx } from './causas.js?v=20261028-1641';
-import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1641';
+import { enriquecerCausas, comZeros, fmt, sinal, destaques, causasFiaveis } from '../stats.js?v=20261028-1642';
+import { base, junta, desenhar } from '../charts.js?v=20261028-1642';
+import { info, esc, def, btnPptx, faixa } from '../ui.js?v=20261028-1642';
+import { icon } from '../icons.js?v=20261028-1642';
+import { formatarPeriodo } from '../excel.js?v=20261028-1642';
+import { npsGlobal, destaquesHtml, linhas, tabelaPptx } from './causas.js?v=20261028-1642';
+import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1642';
 
 export const multi = true;
 
@@ -83,8 +83,6 @@ export function html(rec, meta) {
     <div class="kpi${hero ? ' hero' : ''}"><span class="kl">${rot} ${k}</span><span class="kv num">${val}</span><span class="kd">${det}</span></div>`;
   const opcoes = ds.map(d => `<option>${esc(d.nome)}</option>`).join('');
   return `
-    ${dAbaixo.length ? faixa('bad', `${dAbaixo.length === 1 ? 'Um driver está' : `${dAbaixo.length} drivers estão`} abaixo da meta (${meta}):`, dAbaixo.map(d => `${esc(d.nome)} <b class="num">${fmt(d.nps)}</b>`).join(' · ')) : ''}
-    ${abaixo.length ? faixa('bad', `${abaixo.length === 1 ? 'Uma causa está' : `${abaixo.length} causas estão`} abaixo da meta:`, abaixo.slice(0, 6).map(c => `${esc(c.nome)} <b class="num">${fmt(c.nps)}</b>`).join(' · ') + (abaixo.length > 6 ? ` e mais ${abaixo.length - 6} na tabela.` : '')) : ''}
     <div class="kpis" style="grid-template-columns:repeat(4,minmax(0,1fr))">
       ${kpi('Drivers', fmt(ds.length), dAbaixo.length ? `${dAbaixo.length} abaixo da meta` : `meta ${meta}`, def('driver'), true)}
       ${kpi('Causas com menções', fmt(cs.filter(c => !c.zero).length), `de ${fmt(cs.length)} opções em todos os drivers`, def('causa'))}

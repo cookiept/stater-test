@@ -1,16 +1,16 @@
 // Stater · protótipo. Uma página, menu de marcas à esquerda, cada tab lê o seu Excel.
-import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1641';
-import { icon } from './icons.js?v=20261028-1641';
-import { logo } from './logos.js?v=20261028-1641';
-import { esc, info, def, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1641';
-import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData, identificar, TIPOS } from './excel.js?v=20261028-1641';
-import { resumoNps, fmt, sinal, LIMITES, enriquecerCausas, causasFiaveis, destaques } from './stats.js?v=20261028-1641';
-import { exportarGrafico, exportarTab, exportarOverview, imprimir } from './export.js?v=20261028-1641';
-import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1641';
-import * as vNps from './views/nps.js?v=20261028-1641';
-import * as vCausas from './views/causas.js?v=20261028-1641';
-import * as vMolho from './views/molho.js?v=20261028-1641';
-import { exemplos } from './exemplo.js?v=20261028-1641';
+import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1642';
+import { icon } from './icons.js?v=20261028-1642';
+import { logo } from './logos.js?v=20261028-1642';
+import { esc, info, def, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1642';
+import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData, identificar, TIPOS } from './excel.js?v=20261028-1642';
+import { resumoNps, fmt, sinal, LIMITES, enriquecerCausas, causasFiaveis, destaques } from './stats.js?v=20261028-1642';
+import { exportarGrafico, exportarTab, exportarOverview, imprimir } from './export.js?v=20261028-1642';
+import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1642';
+import * as vNps from './views/nps.js?v=20261028-1642';
+import * as vCausas from './views/causas.js?v=20261028-1642';
+import * as vMolho from './views/molho.js?v=20261028-1642';
+import { exemplos } from './exemplo.js?v=20261028-1642';
 
 // Tabs que funcionam no protótipo
 const ANALISES = {

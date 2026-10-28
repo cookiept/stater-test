@@ -1,9 +1,9 @@
 // Tab "NPS": distribuição das notas 0–10 (Stats iQ Describe).
-import { resumoNps, fmt, sinal, LIMITES } from '../stats.js?v=20261028-1641';
-import { base, junta, desenhar } from '../charts.js?v=20261028-1641';
-import { info, esc, def, GLOSSARIO, btnPptx, faixa } from '../ui.js?v=20261028-1641';
-import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1641';
-import { icon } from '../icons.js?v=20261028-1641';
+import { resumoNps, fmt, sinal, LIMITES } from '../stats.js?v=20261028-1642';
+import { base, junta, desenhar } from '../charts.js?v=20261028-1642';
+import { info, esc, def, GLOSSARIO, btnPptx, faixa } from '../ui.js?v=20261028-1642';
+import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1642';
+import { icon } from '../icons.js?v=20261028-1642';
 
 const estadoMeta = (nps, meta) => (nps > meta ? 'Acima da meta' : nps === meta ? 'Na meta' : 'Abaixo da meta');
 
@@ -50,7 +50,6 @@ export function html(rec, meta) {
       <span class="kv num">${val}</span><span class="kd">${det}</span>
     </div>`;
   const avisos = [];
-  if (r.total < LIMITES.poucasRespostas) avisos.push(faixa('mid', 'Poucas respostas.', `Só ${fmt(r.total)} respostas: o NPS pode mudar muito com cada pessoa. Usa estes números só como indicação.`));
   return `
     ${avisos.join('')}
     <div class="kpis">
