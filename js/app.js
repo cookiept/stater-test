@@ -1,14 +1,14 @@
 // Stater · protótipo. Uma página, menu de marcas à esquerda, cada tab lê o seu Excel.
-import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261027-1520';
-import { icon } from './icons.js?v=20261027-1520';
-import { logo } from './logos.js?v=20261027-1520';
-import { esc, info, ligarTooltips, toast, confirmar } from './ui.js?v=20261027-1520';
-import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261027-1520';
-import { resumoNps, fmt, sinal } from './stats.js?v=20261027-1520';
-import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261027-1520';
-import * as vNps from './views/nps.js?v=20261027-1520';
-import * as vCausas from './views/causas.js?v=20261027-1520';
-import { exemplos } from './exemplo.js?v=20261027-1520';
+import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1251';
+import { icon } from './icons.js?v=20261028-1251';
+import { logo } from './logos.js?v=20261028-1251';
+import { esc, info, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1251';
+import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261028-1251';
+import { resumoNps, fmt, sinal } from './stats.js?v=20261028-1251';
+import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1251';
+import * as vNps from './views/nps.js?v=20261028-1251';
+import * as vCausas from './views/causas.js?v=20261028-1251';
+import { exemplos } from './exemplo.js?v=20261028-1251';
 
 // Tabs que funcionam no protótipo
 const ANALISES = {
@@ -138,7 +138,7 @@ function painel(brand, tab) {
   const head = (chipsHtml = '') => `
     <div class="panel-head">
       <span class="tile" style="${tileVars(brand)}">${icon(tab.icon)}</span>
-      <div><h2>${esc(tab.name)}</h2><div class="sub">${esc(brand.name)} · Stats iQ</div></div>
+      <h2>${esc(tab.name)}</h2>
       <div class="chips">${chipsHtml}</div>
     </div>`;
   if (!live) return `<section class="panel">${head()}${painelEmBreve(brand, tab)}</section>`;

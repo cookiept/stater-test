@@ -413,3 +413,12 @@ dialog .row { display: flex; gap: 8px; justify-content: flex-end; }
 .ov-bar-logo { position: absolute; z-index: 2; pointer-events: none; background: #fff; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,.18); display: grid; place-items: center; box-sizing: border-box; }
 .ov-bar-logo .logo { width: 100%; height: 100%; display: block; }
 #ch-ov { position: relative; }
+
+/* Gráfico com dados fictícios */
+.card.ficticio { border: 1.5px dashed #e0a400; }
+.aviso-ficticio { margin: 2px 0 10px; display: flex; gap: 10px; align-items: flex-start; background: #fff4d6; color: #5c4300; border-radius: 12px; padding: 10px 12px; font-size: 13px; line-height: 19px; }
+.aviso-ficticio b { margin-right: 4px; }
+.aviso-ficticio .ico { width: 16px; height: 16px; margin-top: 2px; flex-shrink: 0; }
+.chart-ficticio { position: relative; }
+.marca-agua { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; font-size: 44px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: rgba(224,164,0,.16); transform: rotate(-8deg); }
+@media (max-width: 600px) { .marca-agua { font-size: 26px; } }

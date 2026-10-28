@@ -1,8 +1,8 @@
 // Tab "NPS": distribuição das notas 0–10 (Stats iQ Describe).
-import { resumoNps, fmt, sinal } from '../stats.js?v=20261027-1520';
-import { base, junta, desenhar } from '../charts.js?v=20261027-1520';
-import { info, esc } from '../ui.js?v=20261027-1520';
-import { icon } from '../icons.js?v=20261027-1520';
+import { resumoNps, fmt, sinal } from '../stats.js?v=20261028-1251';
+import { base, junta, desenhar } from '../charts.js?v=20261028-1251';
+import { info, esc } from '../ui.js?v=20261028-1251';
+import { icon } from '../icons.js?v=20261028-1251';
 
 export function chips(rec) {
   return { respostas: resumoNps(rec.data.contagens).total };
@@ -75,13 +75,12 @@ export function html(rec, meta) {
         <div id="ch-dist" class="chart" role="img" aria-label="Distribuição das notas de 0 a 10"></div>
       </section>
     </div>
-    <section class="card" aria-labelledby="h-mes">
+    <section class="card ficticio" aria-labelledby="h-mes">
       <div class="card-head">
         <h3 id="h-mes">NPS por mês</h3>
-        <span class="badge example">${icon('sparkle', 'ico')} Exemplo</span>
-        <div class="note">O Excel atual não traz meses: estes valores são fictícios, só para mostrar o gráfico.</div>
       </div>
-      <div id="ch-mes" class="chart" role="img" aria-label="Exemplo de NPS por mês"></div>
+      <div class="aviso-ficticio">${icon('info')}<div><b>Dados fictícios</b> O Excel atual não traz meses. Este gráfico só mostra como vai ficar.</div></div>
+      <div class="chart-ficticio"><div id="ch-mes" class="chart" role="img" aria-label="NPS por mês com dados fictícios"></div><span class="marca-agua" aria-hidden="true">Dados fictícios</span></div>
     </section>`;
 }
 
@@ -130,7 +129,7 @@ export function mount(rec, brand, meta) {
   const desvios = [-7, -4, -6, -2, -5, -1, 1, -3, 2, 0, 3, 1];
   desenhar(document.getElementById('ch-mes'), junta(b, {
     chart: { type: 'bar', height: 220 },
-    series: [{ name: 'NPS (exemplo)', data: desvios.map(d => r.nps + d) }],
+    series: [{ name: 'NPS (fictício)', data: desvios.map(d => r.nps + d) }],
     colors: desvios.map((_, i) => (i >= 9 ? brandC : brand.colors.lightest)),
     plotOptions: { bar: { borderRadius: 5, borderRadiusApplication: 'end', columnWidth: '58%', distributed: true, dataLabels: { position: 'top' } } },
     dataLabels: { enabled: true, offsetY: -18, style: { fontSize: '11px', fontWeight: 600, colors: ['#494949'] } },
