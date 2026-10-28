@@ -1,8 +1,8 @@
 // Tab "NPS por Causa Raiz": Relate de Group NPS com a causa raiz (resposta múltipla).
-import { enriquecerCausas, npsDe, fmt, sinal } from '../stats.js?v=20261028-1341';
-import { base, junta, desenhar } from '../charts.js?v=20261028-1341';
-import { info, esc } from '../ui.js?v=20261028-1341';
-import { icon } from '../icons.js?v=20261028-1341';
+import { enriquecerCausas, npsDe, fmt, sinal } from '../stats.js?v=20261028-1328';
+import { base, junta, desenhar } from '../charts.js?v=20261028-1328';
+import { info, esc } from '../ui.js?v=20261028-1328';
+import { icon } from '../icons.js?v=20261028-1328';
 
 const npsGlobal = data => {
   const a = data.amostraGrupo;
@@ -41,7 +41,7 @@ export function html(rec) {
   const mencoes = cs.reduce((a, c) => a + c.total, 0);
   const titulo = rec.data.titulo ? esc(rec.data.titulo.replace(/\.\.\.$/, '…')) : 'Causa raiz';
   const kpi = (rot, val, det, tip, hero = false) => `
-    <div class="kpi${hero ? ' hero' : ''}"><span class="kl">${rot}</span><span class="k-i">${info(rot, tip)}</span><span class="kv num">${val}</span><span class="kd">${det}</span></div>`;
+    <div class="kpi${hero ? ' hero' : ''}"><span class="kl">${rot} ${info(rot, tip)}</span><span class="kv num">${val}</span><span class="kd">${det}</span></div>`;
   return `
     <div class="kpis" style="grid-template-columns:repeat(4,minmax(0,1fr))">
       ${g ? kpi('NPS de quem respondeu', fmt(g.nps), `${fmt(g.total)} pessoas`, 'NPS de todas as pessoas que viram esta pergunta, calculado a partir do tamanho de cada grupo (Sample Size) no Excel.', true) : ''}
