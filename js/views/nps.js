@@ -1,9 +1,9 @@
 // Tab "NPS": distribuição das notas 0–10 (Stats iQ Describe).
-import { resumoNps, fmt, sinal, LIMITES, CORES, corMeta } from '../stats.js?v=20261028-1659';
-import { base, junta, desenhar } from '../charts.js?v=20261028-1659';
-import { info, esc, def, GLOSSARIO, btnPptx, faixa } from '../ui.js?v=20261028-1659';
-import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1659';
-import { icon } from '../icons.js?v=20261028-1659';
+import { resumoNps, fmt, sinal, LIMITES, CORES, corNps, corNpsClaro } from '../stats.js?v=20261028-1721';
+import { base, junta, desenhar } from '../charts.js?v=20261028-1721';
+import { info, esc, def, GLOSSARIO, btnPptx, faixa } from '../ui.js?v=20261028-1721';
+import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1721';
+import { icon } from '../icons.js?v=20261028-1721';
 
 const estadoMeta = (nps, meta) => (nps > meta ? 'Acima da meta' : nps === meta ? 'Na meta' : 'Abaixo da meta');
 
@@ -96,7 +96,7 @@ export function mount(rec, brand, meta) {
   const c = rec.data.contagens;
   const r = resumoNps(c);
   const cores = c.map((_, i) => (i <= 6 ? CORES.det : i <= 8 ? CORES.neu : CORES.pro));
-  const corG = corMeta(r.nps, meta);
+  const corG = corNps(r.nps);
   const b = base(brand);
 
   desenhar(document.getElementById('ch-gauge'), junta(b, {
@@ -113,7 +113,7 @@ export function mount(rec, brand, meta) {
         },
       },
     },
-    fill: { type: 'gradient', gradient: { shade: 'light', type: 'horizontal', gradientToColors: [r.nps >= meta ? '#7fd394' : '#f19a8c'], stops: [0, 100] } },
+    fill: { type: 'gradient', gradient: { shade: 'light', type: 'horizontal', gradientToColors: [corNpsClaro(r.nps)], stops: [0, 100] } },
     stroke: { lineCap: 'round' },
     labels: ['NPS'],
   }));
