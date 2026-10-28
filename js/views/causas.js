@@ -1,9 +1,9 @@
 // Tab "NPS por Causa Raiz": Relate de Group NPS com a causa raiz (resposta múltipla).
-import { enriquecerCausas, comZeros, npsDe, fmt, sinal, destaques, causasFiaveis } from '../stats.js?v=20261028-1638';
-import { base, junta, desenhar } from '../charts.js?v=20261028-1638';
-import { info, esc, def, btnPptx, faixa } from '../ui.js?v=20261028-1638';
-import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1638';
-import { icon } from '../icons.js?v=20261028-1638';
+import { enriquecerCausas, comZeros, npsDe, fmt, sinal, destaques, causasFiaveis } from '../stats.js?v=20261028-1641';
+import { base, junta, desenhar } from '../charts.js?v=20261028-1641';
+import { info, esc, def, btnPptx, faixa } from '../ui.js?v=20261028-1641';
+import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1641';
+import { icon } from '../icons.js?v=20261028-1641';
 
 export const npsGlobal = data => {
   const a = data.amostraGrupo;

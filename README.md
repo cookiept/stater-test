@@ -6,7 +6,7 @@ Protótipo do novo Stater: os resultados do Qualtrics Stats iQ das marcas do Gru
 
 ## O que funciona
 - Menu com todas as marcas e tabs, com os nomes do Stater atual.
-- **NPS** de todas as marcas menos a Nedlinq, **NPS por Causa Raiz** e **Todos ao molho** (tabela única de causas, vários Excel de uma vez) da Colibri.
+- **NPS** de todas as marcas menos a Nedlinq, **NPS por Causa Raiz** da Colibri. "Todos ao molho" está desligado até haver uma forma melhor de obter os Excel (o código fica em js/views/molho.js; para ligar, `live: true` em js/brands.js).
 - Filtros da extração lidos do topo do Excel, avisos de ficheiro errado com o que falta e a tab certa, explicações "i", destaques e avisos de poucas respostas.
 - Alertas abaixo da meta por marca, driver e causa raiz (Overview, menu e tabs). Drivers e causas usam a meta da marca.
 - **Overview**: marcas na meta, respostas, alertas e um cartão por marca.

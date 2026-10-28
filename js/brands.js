@@ -28,7 +28,7 @@ export const BRANDS = [
       { id: 'driver-relate', name: 'NPS por Driver', icon: 'wheel' },
       { id: 'causa-raiz', name: 'NPS por Causa Raiz', icon: 'search', live: true },
       { id: 'topics', name: 'NPS por Topics (Text iQ)', icon: 'tag' },
-      { id: 'molho', name: 'Todos ao molho', icon: 'layers', live: true },
+      { id: 'molho', name: 'Todos ao molho', icon: 'layers' },
     ],
   },
   {

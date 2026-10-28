@@ -1,16 +1,16 @@
 // Stater · protótipo. Uma página, menu de marcas à esquerda, cada tab lê o seu Excel.
-import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1638';
-import { icon } from './icons.js?v=20261028-1638';
-import { logo } from './logos.js?v=20261028-1638';
-import { esc, info, def, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1638';
-import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData, identificar, TIPOS } from './excel.js?v=20261028-1638';
-import { resumoNps, fmt, sinal, LIMITES, enriquecerCausas, causasFiaveis, destaques } from './stats.js?v=20261028-1638';
-import { exportarGrafico, exportarTab, exportarOverview, imprimir } from './export.js?v=20261028-1638';
-import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1638';
-import * as vNps from './views/nps.js?v=20261028-1638';
-import * as vCausas from './views/causas.js?v=20261028-1638';
-import * as vMolho from './views/molho.js?v=20261028-1638';
-import { exemplos } from './exemplo.js?v=20261028-1638';
+import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1641';
+import { icon } from './icons.js?v=20261028-1641';
+import { logo } from './logos.js?v=20261028-1641';
+import { esc, info, def, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1641';
+import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData, identificar, TIPOS } from './excel.js?v=20261028-1641';
+import { resumoNps, fmt, sinal, LIMITES, enriquecerCausas, causasFiaveis, destaques } from './stats.js?v=20261028-1641';
+import { exportarGrafico, exportarTab, exportarOverview, imprimir } from './export.js?v=20261028-1641';
+import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1641';
+import * as vNps from './views/nps.js?v=20261028-1641';
+import * as vCausas from './views/causas.js?v=20261028-1641';
+import * as vMolho from './views/molho.js?v=20261028-1641';
+import { exemplos } from './exemplo.js?v=20261028-1641';
 
 // Tabs que funcionam no protótipo
 const ANALISES = {
@@ -181,7 +181,6 @@ function resumoHtml(r) {
     <h3 class="sec-title">Resumo <span class="badge" data-tip-title="Regras fixas" data-tip="${TIP_REGRAS}" tabindex="0">Regras fixas</span></h3>
     ${blocos.map(b => `<div class="rs-bloco ${b.tom || ''}">${b.titulo ? `<b class="rs-t">${b.titulo}</b>` : ''}<p>${b.texto}</p></div>`).join('')}
     ${r.factos ? `<div class="rs-factos">${r.factos.map(f => `<div class="rs-f ${f.tom || ''}">${f.tip ? `<span class="rs-i">${info(f.rot, f.tip)}</span>` : ''}<b class="num">${f.valor}</b><span>${f.rot}</span></div>`).join('')}</div>` : ''}
-    ${r.notas?.length ? `<ul class="rs-notas">${r.notas.map(n => `<li>${n}</li>`).join('')}</ul>` : ''}
   </div>`;
 }
 
