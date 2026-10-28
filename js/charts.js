@@ -18,7 +18,9 @@ export function base(brand) {
       animations: { enabled: !matchMedia('(prefers-reduced-motion: reduce)').matches, speed: 450 },
       foreColor: '#767676', parentHeightOffset: 0,
     },
-    grid: { borderColor: '#eeeeee', strokeDashArray: 3, padding: { left: 6, right: 8 } },
+    grid: { borderColor: '#efefef', strokeDashArray: 4, xaxis: { lines: { show: false } }, padding: { left: 6, right: 8 } },
+    // Barras com um gradiente leve (mais luz em cima) para não parecerem planas
+    fill: { type: 'gradient', gradient: { shade: 'light', type: 'vertical', shadeIntensity: 0.18, opacityFrom: 1, opacityTo: 0.88, stops: [0, 100] } },
     dataLabels: { enabled: false },
     legend: { show: false },
     tooltip: { theme: 'light' },
