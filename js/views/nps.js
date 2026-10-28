@@ -1,8 +1,9 @@
 // Tab "NPS": distribuição das notas 0–10 (Stats iQ Describe).
-import { resumoNps, fmt, sinal } from '../stats.js?v=20261028-1347';
-import { base, junta, desenhar } from '../charts.js?v=20261028-1347';
-import { info, esc } from '../ui.js?v=20261028-1347';
-import { icon } from '../icons.js?v=20261028-1347';
+import { resumoNps, fmt, sinal, LIMITES } from '../stats.js?v=20261028-1414';
+import { base, junta, desenhar } from '../charts.js?v=20261028-1414';
+import { info, esc, def, GLOSSARIO, btnPptx, faixa } from '../ui.js?v=20261028-1414';
+import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1414';
+import { icon } from '../icons.js?v=20261028-1414';
 
 export function chips(rec) {
   return { respostas: resumoNps(rec.data.contagens).total };
@@ -41,23 +42,27 @@ export function resumo(rec, meta) {
 
 export function html(rec, meta) {
   const r = resumoNps(rec.data.contagens);
-  const kpi = (rot, val, det, tip, hero = false) => `
+  const kpi = (rot, val, det, k, hero = false) => `
     <div class="kpi${hero ? ' hero' : ''}">
-      <span class="kl">${rot} ${tip ? info(rot, tip) : ''}</span>
+      <span class="kl">${rot} ${k ? def(k, rot) : ''}</span>
       <span class="kv num">${val}</span><span class="kd">${det}</span>
     </div>`;
+  const avisos = [];
+  if (r.nps < meta) avisos.push(faixa('bad', 'Abaixo da meta.', `O NPS de ${fmt(r.nps)} está ${meta - r.nps} ${meta - r.nps === 1 ? 'ponto' : 'pontos'} abaixo da meta de ${meta}.`));
+  if (r.total < LIMITES.poucasRespostas) avisos.push(faixa('mid', 'Poucas respostas.', `Só ${fmt(r.total)} respostas: o NPS pode mudar muito com cada pessoa. Usa estes números só como indicação.`));
   return `
+    ${avisos.join('')}
     <div class="kpis">
-      ${kpi('NPS', fmt(r.nps), `Meta ${meta}`, 'Net Promoter Score: % de promotores (9–10) menos % de detratores (0–6). Vai de −100 a +100. Calculado a partir das contagens do Excel.', true)}
-      ${kpi('Respostas', fmt(r.total), 'notas de 0 a 10', 'Total de respostas com nota no período do ficheiro.')}
-      ${kpi('Promotores', `${fmt(r.pctP, 1)}%`, `${fmt(r.p)} pessoas`, 'Quem deu 9 ou 10.')}
-      ${kpi('Neutros', `${fmt(r.pctN, 1)}%`, `${fmt(r.n)} pessoas`, 'Quem deu 7 ou 8. Não entram na conta do NPS, mas estão perto de passar a promotores.')}
-      ${kpi('Detratores', `${fmt(r.pctD, 1)}%`, `${fmt(r.d)} pessoas`, 'Quem deu de 0 a 6.')}
-      ${kpi('Média', fmt(r.media, 2), `Desvio padrão ${fmt(r.dp, 2)}`, 'Média das notas de 0 a 10. O desvio padrão mostra quão espalhadas estão as notas: quanto maior, mais opiniões divergentes.')}
+      ${kpi('NPS', fmt(r.nps), `Meta ${meta}`, 'nps', true)}
+      ${kpi('Respostas', fmt(r.total), r.total < LIMITES.poucasRespostas ? 'poucas respostas' : 'notas de 0 a 10', 'respostas')}
+      ${kpi('Promotores', `${fmt(r.pctP, 1)}%`, `${fmt(r.p)} pessoas`, 'promotores')}
+      ${kpi('Neutros', `${fmt(r.pctN, 1)}%`, `${fmt(r.n)} pessoas`, 'neutros')}
+      ${kpi('Detratores', `${fmt(r.pctD, 1)}%`, `${fmt(r.d)} pessoas`, 'detratores')}
+      ${kpi('Média', fmt(r.media, 2), `Desvio padrão ${fmt(r.dp, 2)}`, 'media')}
     </div>
     <div class="grid-2">
       <section class="card" aria-labelledby="h-gauge">
-        <div class="card-head"><h3 id="h-gauge">NPS face à meta ${info('Meta', 'A meta vem da Overview (por omissão 60). Altera-a lá e todas as tabs passam a usá-la.')}</h3></div>
+        <div class="card-head"><h3 id="h-gauge">NPS face à meta ${def('meta')}</h3>${btnPptx('gauge')}</div>
         <div id="ch-gauge" class="chart" role="img" aria-label="NPS ${fmt(r.nps)} com meta ${meta}"></div>
         <div style="flex:1"></div><div class="compo" aria-hidden="true">
           <div class="d" style="flex:${r.pctD}">${r.pctD >= 6 ? fmt(r.pctD) + '%' : ''}</div>
@@ -70,7 +75,7 @@ export function html(rec, meta) {
       <section class="card" aria-labelledby="h-dist">
         <div class="card-head">
           <h3 id="h-dist">Notas dadas ${info('Notas dadas', 'Quantas pessoas deram cada nota. Por cima de cada barra está a percentagem do total.')}</h3>
-          <div class="note">Passa o rato para ver o número de respostas</div>
+          ${btnPptx('dist')}
         </div>
         <div id="ch-dist" class="chart" role="img" aria-label="Distribuição das notas de 0 a 10"></div>
       </section>
@@ -138,6 +143,49 @@ export function mount(rec, brand, meta) {
     annotations: { yaxis: [{ y: meta, borderColor: '#e0a400', strokeDashArray: 4, label: { text: `Meta ${meta}`, position: 'right', textAnchor: 'end', offsetY: -2, borderColor: '#ffc148', style: { background: '#ffc148', color: '#1a1a1a', fontWeight: 600 } } }] },
     tooltip: { y: { formatter: v => `${v} (fictício)` } },
   }));
+}
+
+// Para exportar: números principais, resumo e gráficos nativos do PowerPoint
+export function exportar(rec, brand, meta) {
+  const c = rec.data.contagens;
+  const r = resumoNps(c);
+  const b = baseGrafico(brand);
+  const pct = v => Math.round((v / r.total) * 1000) / 10;
+  return {
+    kpis: [
+      { rot: 'NPS', val: fmt(r.nps), det: `Meta ${meta}` },
+      { rot: 'Respostas', val: fmt(r.total), det: 'notas de 0 a 10' },
+      { rot: 'Promotores', val: `${fmt(r.pctP, 1)}%`, det: `${fmt(r.p)} pessoas` },
+      { rot: 'Neutros', val: `${fmt(r.pctN, 1)}%`, det: `${fmt(r.n)} pessoas` },
+      { rot: 'Detratores', val: `${fmt(r.pctD, 1)}%`, det: `${fmt(r.d)} pessoas` },
+      { rot: 'Média', val: fmt(r.media, 2), det: `Desvio padrão ${fmt(r.dp, 2)}` },
+    ],
+    resumo: [textoDe(resumo(rec, meta).texto)],
+    filtros: rec.data.filtros,
+    graficos: [
+      {
+        id: 'gauge', titulo: 'NPS face à meta',
+        desenhar: (s, p) => {
+          s.addChart(p.ChartType.doughnut, [{ name: 'Respostas', labels: ['Detratores 0–6', 'Neutros 7–8', 'Promotores 9–10'], values: [r.d, r.n, r.p] }],
+            { ...b, x: 0.5, w: 7, holeSize: 62, chartColors: ['DB3A23', 'C4C4C4', hex(brand.colors.main)], showPercent: true, showValue: false, dataLabelColor: 'FFFFFF', legendPos: 'r' });
+          s.addText([
+            { text: 'NPS', options: { fontSize: 14, color: '767676', breakLine: true } },
+            { text: fmt(r.nps), options: { fontSize: 60, bold: true, color: '1A1A1A', breakLine: true } },
+            { text: `Meta ${meta} · ${r.nps >= meta ? 'atingida' : `faltam ${meta - r.nps}`}`, options: { fontSize: 14, color: r.nps >= meta ? '10641D' : 'AD2C19' } },
+          ], { x: 8, y: 2.4, w: 4.8, h: 2.6, fontFace: b.fontFace, valign: 'middle' });
+        },
+      },
+      {
+        id: 'dist', titulo: 'Notas dadas (% das respostas)',
+        // Três séries empilhadas para cada nota ter a cor do seu grupo e continuar editável
+        desenhar: (s, p) => s.addChart(p.ChartType.bar, [
+          { name: 'Detratores', labels: c.map((_, i) => String(i)), values: c.map((v, i) => (i <= 6 ? pct(v) : 0)) },
+          { name: 'Neutros', labels: c.map((_, i) => String(i)), values: c.map((v, i) => (i === 7 || i === 8 ? pct(v) : 0)) },
+          { name: 'Promotores', labels: c.map((_, i) => String(i)), values: c.map((v, i) => (i >= 9 ? pct(v) : 0)) },
+        ], { ...b, barDir: 'col', barGrouping: 'stacked', barGapWidthPct: 40, chartColors: ['DB3A23', 'C4C4C4', hex(brand.colors.main)], showValue: true, dataLabelFormatCode: '0.0"%";;;', dataLabelPosition: 'inEnd', valAxisLabelFormatCode: '0"%"' }),
+      },
+    ],
+  };
 }
 
 // Texto do Stater v10, sem alterações

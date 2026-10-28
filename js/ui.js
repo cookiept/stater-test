@@ -1,5 +1,5 @@
 // Pequenas peças de interface partilhadas.
-import { icon } from './icons.js?v=20261028-1347';
+import { icon } from './icons.js?v=20261028-1414';
 
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -7,6 +7,25 @@ export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;'
 export function info(titulo, texto) {
   return `<button type="button" class="info" data-tip-title="${esc(titulo)}" data-tip="${esc(texto)}" aria-label="O que é ${esc(titulo)}?">${icon('info')}</button>`;
 }
+
+// Explicações simples dos termos do Stater, para os botões "i".
+export const GLOSSARIO = {
+  nps: ['NPS', 'Net Promoter Score. Mede se os clientes nos recomendam: % de promotores menos % de detratores. Vai de −100 a +100.'],
+  respostas: ['Respostas', 'Pessoas que deram uma nota de 0 a 10 no período do ficheiro.'],
+  promotores: ['Promotores', 'Quem deu 9 ou 10. São os clientes que nos recomendam.'],
+  neutros: ['Neutros', 'Quem deu 7 ou 8. Estão satisfeitos mas não entusiasmados. Não entram na conta do NPS.'],
+  detratores: ['Detratores', 'Quem deu de 0 a 6. São os clientes que não nos recomendam.'],
+  meta: ['Meta', 'O NPS que a marca quer atingir. Define-se na Overview, em Editar metas. Abaixo dela aparece um alerta.'],
+  driver: ['Driver', 'Uma parte da experiência que ajuda a explicar a nota, como a chegada, o atendimento ou o preço. Cada driver tem as suas causas raiz.'],
+  causa: ['Causa raiz', 'O motivo concreto que o cliente escolheu para explicar a nota, dentro de um driver.'],
+  mencoes: ['Menções', 'Quantas vezes uma causa foi escolhida. Uma pessoa pode escolher várias causas, por isso não é o número de pessoas.'],
+  peso: ['Peso', 'Parte das menções desta causa no total. Mostra o que mais se repete.'],
+  amostra: ['Poucas respostas', 'Com poucas respostas o NPS muda muito com cada pessoa. Abaixo de 30 menções numa causa, ou de 100 respostas no NPS, os números servem só como indicação.'],
+  periodo: ['Período em análise', 'As datas do filtro usado no Qualtrics ao exportar o Excel. Não é a data em que o ficheiro foi carregado.'],
+  filtros: ['Filtros da extração', 'Os filtros aplicados no Qualtrics antes de exportar: período, tipo de resposta, loja, etc. O Stater lê-os do topo do Excel.'],
+  media: ['Média', 'A média das notas de 0 a 10. Ajuda a ver se as notas estão mais perto do 9 ou do 6.'],
+};
+export const def = (k, rot) => info(rot || GLOSSARIO[k][0], GLOSSARIO[k][1]);
 
 let tipEl = null;
 function mostrar(btn) {
@@ -66,3 +85,9 @@ export function onda(seed = 1) {
   }
   return `<svg class="wave" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><path d="${d1}" fill="none" stroke="currentColor" stroke-width="2"/><path d="${d2}" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>`;
 }
+
+// Botão para levar um gráfico para PowerPoint (editável)
+export const btnPptx = id => `<button type="button" class="btn btn-ghost btn-xs exp" data-exp="${id}" title="Levar este gráfico para PowerPoint, como gráfico editável">${icon('slides')}<span class="exp-t">PowerPoint</span></button>`;
+
+// Faixa de alerta dentro de uma tab (abaixo da meta, poucas respostas)
+export const faixa = (tom, titulo, texto) => `<div class="faixa ${tom}" role="status">${icon(tom === 'bad' ? 'alert' : 'info')}<div><b>${titulo}</b> ${texto}</div></div>`;

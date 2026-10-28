@@ -38,3 +38,21 @@ export function enriquecerCausas(causas) {
 
 export const fmt = (v, casas = 0) => Number(v).toLocaleString('pt-PT', { minimumFractionDigits: casas, maximumFractionDigits: casas });
 export const sinal = v => (v > 0 ? `+${fmt(v)}` : fmt(v));
+
+// Limites para avisar que há poucas respostas (os números servem só como indicação)
+export const LIMITES = { poucasRespostas: 100, amostraPequena: 30 };
+
+// Causas que contam para destaques e alertas: sem "Outra"/"Sem sugestões" e com menções suficientes
+export const causasFiaveis = cs => cs.filter(c => !c.semSugestao && !c.amostraPequena);
+
+// Destaques de uma lista de causas já enriquecida: pior NPS, mais detratores e mais referida
+export function destaques(cs) {
+  const f = causasFiaveis(cs);
+  const lista = f.length ? f : cs.filter(c => !c.semSugestao);
+  if (!lista.length) return {};
+  return {
+    pior: [...lista].sort((a, b) => a.nps - b.nps)[0],
+    maisDetratores: [...lista].sort((a, b) => b.d - a.d)[0],
+    maisReferida: [...lista].sort((a, b) => b.total - a.total)[0],
+  };
+}

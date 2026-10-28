@@ -1,19 +1,22 @@
 // Stater · protótipo. Uma página, menu de marcas à esquerda, cada tab lê o seu Excel.
-import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1347';
-import { icon } from './icons.js?v=20261028-1347';
-import { logo } from './logos.js?v=20261028-1347';
-import { esc, info, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1347';
-import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261028-1347';
-import { resumoNps, fmt, sinal } from './stats.js?v=20261028-1347';
-import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1347';
-import * as vNps from './views/nps.js?v=20261028-1347';
-import * as vCausas from './views/causas.js?v=20261028-1347';
-import { exemplos } from './exemplo.js?v=20261028-1347';
+import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1414';
+import { icon } from './icons.js?v=20261028-1414';
+import { logo } from './logos.js?v=20261028-1414';
+import { esc, info, def, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1414';
+import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData, identificar, TIPOS } from './excel.js?v=20261028-1414';
+import { resumoNps, fmt, sinal, LIMITES, enriquecerCausas, causasFiaveis, destaques } from './stats.js?v=20261028-1414';
+import { exportarGrafico, exportarTab, exportarMarca, exportarOverview, imprimir } from './export.js?v=20261028-1414';
+import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1414';
+import * as vNps from './views/nps.js?v=20261028-1414';
+import * as vCausas from './views/causas.js?v=20261028-1414';
+import * as vMolho from './views/molho.js?v=20261028-1414';
+import { exemplos } from './exemplo.js?v=20261028-1414';
 
 // Tabs que funcionam no protótipo
 const ANALISES = {
   nps: { parse: parseNps, view: vNps },
   'causa-raiz': { parse: parseCausas, view: vCausas },
+  molho: { parse: parseCausas, view: vMolho },
 };
 // Uma tab funciona se tiver análise e estiver marcada como live em brands.js
 const ativa = (b, t) => !!(b && t && t.live && ANALISES[t.id]);
@@ -26,6 +29,26 @@ const store = {
   del(b, t) { localStorage.removeItem(chave(b, t)); },
 };
 const meta = id => { const v = parseInt(localStorage.getItem(`stater:v1:meta:${id}`), 10); return Number.isFinite(v) ? v : (brandById(id)?.target ?? 60); };
+
+// ---------- Alertas abaixo da meta (marca, driver e causa raiz) ----------
+// Drivers e causas usam a meta da marca. Causas com menos de 30 menções e "Outra"/"Sem sugestões" não contam.
+function alertasDe(b) {
+  const m = meta(b.id), out = [];
+  const add = (tipo, nome, nps, tab) => out.push({ marca: b.name, b, tipo, nome, nps, meta: m, href: `#/${b.id}/${tab}` });
+  const tem = id => b.tabs.some(t => t.id === id && ativa(b, t));
+  const nps = tem('nps') && store.get(b.id, 'nps');
+  if (nps) { const r = resumoNps(nps.data.contagens); if (r.nps < m) add('Marca', 'NPS da marca', r.nps, 'nps'); }
+  const molho = tem('molho') && store.get(b.id, 'molho');
+  if (molho) {
+    for (const f of molho.data.ficheiros) { const g = vCausas.npsGlobal(f); if (g && g.nps < m) add('Driver', f.driver, g.nps, 'molho'); }
+    const cs = enriquecerCausas(molho.data.ficheiros.flatMap(f => f.causas.map(c => ({ ...c, driver: f.driver }))));
+    for (const c of causasFiaveis(cs)) if (c.nps < m) add('Causa raiz', `${c.nome} (${c.driver})`, c.nps, 'molho');
+  }
+  const causa = tem('causa-raiz') && store.get(b.id, 'causa-raiz');
+  if (causa) for (const c of causasFiaveis(enriquecerCausas(causa.data.causas))) if (c.nps < m && !out.some(a => a.nome.startsWith(c.nome + ' ('))) add('Causa raiz', c.nome, c.nps, 'causa-raiz');
+  return out;
+}
+const todosAlertas = () => BRANDS.flatMap(alertasDe);
 
 // ---------- Estado ----------
 let erro = null;
@@ -52,11 +75,12 @@ function sidebar({ brand, tab }) {
   const itens = BRANDS.map(b => {
     const atual = brand?.id === b.id;
     const aberta = abertas.has(b.id);
+    const nAl = alertasDe(b).length;
     const sub = aberta ? `<div class="sb-sub-nav" id="tabs-${b.id}">${b.tabs.map(t => `
         <a class="sb-tab" href="#/${b.id}/${t.id}" ${atual && tab?.id === t.id ? 'aria-current="page"' : ''}>${icon(t.icon)}<span class="lbl" title="${esc(t.name)}">${esc(t.name)}</span>${store.get(b.id, t.id) ? '<span class="dot" title="Com dados"></span>' : ''}</a>`).join('')}</div>` : '';
     return `<div class="sb-row" style="${tileVars(b)}">
         <a class="sb-item${atual ? ' is-open' : ''}" href="#/${b.id}/${b.tabs[0].id}">
-        <span class="tile mark">${logo(b.icon)}</span><span class="nm" title="${esc(b.name)}">${esc(b.name)}</span><span class="count" title="${b.tabs.length} tabs">${b.tabs.length}</span></a>
+        <span class="tile mark">${logo(b.icon)}${nAl ? `<span class="al-dot" title="${nAl} ${nAl === 1 ? 'alerta' : 'alertas'} abaixo da meta"></span>` : ''}</span><span class="nm" title="${esc(b.name)}">${esc(b.name)}</span><span class="count" title="${b.tabs.length} tabs">${b.tabs.length}</span></a>
         <button class="sb-toggle" data-toggle="${b.id}" aria-expanded="${aberta}" aria-controls="tabs-${b.id}" aria-label="${aberta ? 'Fechar' : 'Abrir'} tabs de ${esc(b.name)}">${icon('chevron')}</button>
       </div>${sub}`;
   }).join('');
@@ -88,14 +112,23 @@ function topbar({ brand, tab }) {
 }
 
 // ---------- Painel da tab ----------
+// Aviso de ficheiro errado: o que é o ficheiro, o que falta e em que tab entra
+function avisoErro(extra = '') {
+  if (!erro) return '';
+  const lista = erro.faltas?.length ? `<p class="ae-t">O que falta no ficheiro:</p><ul>${erro.faltas.map(f => `<li>${esc(f)}</li>`).join('')}</ul>` : '';
+  const ir = erro.sugestoes?.length ? `<div class="ae-ir">${erro.sugestoes.map(t => `<a class="btn btn-secondary btn-sm" href="#/${t.b}/${t.id}">Ir para ${esc(t.nome)} ${icon('chevron')}</a>`).join('')}</div>` : '';
+  return `<div class="alert error aviso-erro" role="alert">${icon('alert')}<div><b>${esc(erro.ficheiro ? `"${erro.ficheiro}" não serve para esta tab` : 'Este ficheiro não serve para esta tab')}</b><p>${esc(erro.msg)}${extra}</p>${lista}${ir}</div></div>`;
+}
+
 function painelVazio(brand, tab, A) {
+  const multi = A.view.multi;
   return `
-    ${erro ? `<div class="alert error" role="alert" style="margin:20px 24px 0">${icon('info')}<div><b>Este ficheiro não serve para esta tab</b>${esc(erro)}</div></div>` : ''}
+    ${avisoErro()}
     <div class="empty">
       <div class="drop" id="drop">
         <div class="big">${icon('upload')}</div>
-        <h3>Carrega o Excel desta tab</h3>
-        <p>Arrasta o ficheiro para aqui ou escolhe-o no computador. Aceita .xlsx, .xls e .csv.</p>
+        <h3>${multi ? 'Carrega os Excel dos drivers' : 'Carrega o Excel desta tab'}</h3>
+        <p>${multi ? 'Um Excel por driver. Podes escolher ou arrastar vários de uma vez.' : 'Arrasta o ficheiro para aqui ou escolhe-o no computador.'} Aceita .xlsx, .xls e .csv.</p>
         <div class="row">
           <button class="btn btn-primary" data-act="upload">${icon('upload')} Escolher ficheiro</button>
           <button class="btn btn-secondary" data-act="sample">${icon('sparkle')} Ver com dados de exemplo</button>
@@ -116,6 +149,29 @@ function painelEmBreve(brand, tab) {
     <p>Neste protótipo funcionam a tab <b>NPS</b> de cada marca (menos a Nedlinq) e a <b>NPS por Causa Raiz</b> da Colibri. Esta tab mantém o nome e as regras do Stater atual e vai ganhar o mesmo aspeto.</p>
     ${ativa(brand, brand.tabs[0]) ? `<a class="btn btn-secondary" href="#/${brand.id}/${brand.tabs[0].id}">${icon('bars')} Ver ${esc(brand.name)} › NPS</a>` : ''}
   </div>`;
+}
+
+// Filtros usados no Qualtrics, lidos do topo do Excel
+function filtrosHtml(rec) {
+  const fs = rec.data.filtros;
+  if (!fs) return '';
+  return `<div class="side-block filtros">
+    <h3 class="sec-title">Filtros da extração ${def('filtros')}</h3>
+    ${fs.length ? `<ul class="flt">${fs.map(f => `<li>${f.campo ? `<span>${esc(f.campo)}</span>` : ''}<b>${esc(f.valor)}</b></li>`).join('')}</ul>` : '<p class="muted flt-vazio">Sem filtros: o Excel inclui todas as respostas.</p>'}
+    ${rec.data.pergunta ? `<p class="flt-q"><span>Pergunta</span>${esc(rec.data.pergunta)}</p>` : ''}
+  </div>`;
+}
+
+// Menu "Exportar": esta tab em PowerPoint ou PDF, ou a marca inteira em PowerPoint
+function menuExportar(overview = false) {
+  return `<details class="menu-exp">
+    <summary class="btn btn-secondary btn-sm">${icon('download')} Exportar</summary>
+    <div class="menu-lista" role="menu">
+      <button type="button" role="menuitem" data-act="exp-tab">${icon('slides')}<span><b>${overview ? 'Overview' : 'Esta tab'} em PowerPoint</b><small>Gráficos editáveis</small></span></button>
+      <button type="button" role="menuitem" data-act="exp-pdf">${icon('print')}<span><b>${overview ? 'Overview' : 'Esta tab'} em PDF</b><small>Abre a janela de impressão: escolhe "Guardar como PDF"</small></span></button>
+      ${overview ? '' : `<button type="button" role="menuitem" data-act="exp-marca">${icon('layers')}<span><b>Marca inteira em PowerPoint</b><small>Todas as tabs desta marca com dados</small></span></button>`}
+    </div>
+  </details>`;
 }
 
 const TIP_REGRAS = 'O texto sai de regras fixas aplicadas aos números do Excel, as mesmas do Stater atual. Não há opinião nem IA: as mesmas contas dão sempre as mesmas frases.';
@@ -147,23 +203,24 @@ function painel(brand, tab) {
   const ch = A.view.chips(rec);
   const chipsHtml = `
     ${rec.exemplo ? `<span class="chip" style="background:#ece7fb;color:#4b2a9c">${icon('sparkle')} Dados de exemplo</span>` : ''}
-    <span class="chip">${icon('calendar')} Período do ficheiro <b class="chip brand" style="padding:2px 8px">${esc(formatarPeriodo(rec.data.periodo))}</b></span>
-    <span class="chip">${icon('users')} Respostas <b class="num">${fmt(ch.respostas)}</b></span>
-    <span class="chip">${icon('file')} Fonte <b>Stats iQ</b></span>`;
+    <span class="chip">${icon('calendar')} Período em análise <b class="chip brand" style="padding:2px 8px">${esc(formatarPeriodo(rec.data.periodo))}</b> ${def('periodo')}</span>
+    <span class="chip">${icon('users')} ${ch.rotulo || 'Respostas'} <b class="num">${fmt(ch.respostas)}</b></span>
+    ${menuExportar()}`;
   return `<section class="panel">
     ${head(chipsHtml)}
-    ${erro ? `<div class="alert error" role="alert" style="margin:16px 24px 0">${icon('info')}<div><b>Este ficheiro não serve para esta tab</b>${esc(erro)} Os dados anteriores continuam.</div></div>` : ''}
+    ${avisoErro(' Os dados anteriores continuam.')}
     <div class="panel-body">
       <aside class="panel-side">
         ${resumoHtml(A.view.resumo(rec, m))}
-        <div class="side-block">
+        ${filtrosHtml(rec)}
+        ${A.view.lado ? A.view.lado(rec, m) : `<div class="side-block">
           <h3 class="sec-title">Ficheiro desta tab</h3>
           <div class="filecard">${icon('file')}<div><div class="fn">${esc(rec.fileName)}</div><div class="fm">Carregado a ${formatarData(rec.savedAt)} · ${esc(formatarPeriodo(rec.data.periodo))}</div></div></div>
           <div class="file-actions">
             <button class="btn btn-secondary btn-sm" data-act="upload">${icon('upload')} Substituir</button>
             <button class="btn btn-danger-ghost btn-sm" data-act="clear" title="Apaga só o ficheiro desta tab">${icon('trash')} Apagar</button>
           </div>
-        </div>
+        </div>`}
         <details class="fold">
           <summary>${icon('chevron')} ${esc(A.view.importar.titulo)}</summary>
           <div class="fold-body"><p class="import-txt">${esc(A.view.importar.texto)}</p></div>
@@ -206,13 +263,30 @@ function editarMetas() {
 }
 
 // ---------- Overview (Grupo Brisa) ----------
-function overview() {
-  const dados = BRANDS.map(b => {
-    const rec = store.get(b.id, 'nps');
-    return { b, rec, r: rec ? resumoNps(rec.data.contagens) : null, m: meta(b.id) };
+function dadosOverview() {
+  return BRANDS.map(b => {
+    const rec = ativa(b, b.tabs[0]) ? store.get(b.id, 'nps') : null;
+    const cau = ['molho', 'causa-raiz'].map(id => b.tabs.some(t => t.id === id && ativa(b, t)) && store.get(b.id, id)).find(Boolean);
+    let pior = null;
+    if (cau) {
+      const cs = cau.data.ficheiros ? enriquecerCausas(cau.data.ficheiros.flatMap(f => f.causas.map(c => ({ ...c, driver: f.driver })))) : enriquecerCausas(cau.data.causas);
+      pior = destaques(cs).pior || null;
+    }
+    const comDados = b.tabs.filter(t => ativa(b, t) && store.get(b.id, t.id)).length;
+    const vivas = b.tabs.filter(t => ativa(b, t)).length;
+    return { b, rec, r: rec ? resumoNps(rec.data.contagens) : null, m: meta(b.id), pior, comDados, vivas, alertas: alertasDe(b) };
   });
+}
+
+function overview() {
+  const dados = dadosOverview();
   const comDados = dados.filter(d => d.r);
   const totalResp = comDados.reduce((a, d) => a + d.r.total, 0);
+  const acima = comDados.filter(d => d.r.nps >= d.m).length;
+  const alertas = dados.flatMap(d => d.alertas);
+  const tabsCom = dados.reduce((a, d) => a + d.comDados, 0), tabsVivas = dados.reduce((a, d) => a + d.vivas, 0);
+  const kpi = (rot, val, det, k, hero = false) => `<div class="kpi${hero ? ' hero' : ''}"><span class="kl">${rot} ${k}</span><span class="kv num">${val}</span><span class="kd">${det}</span></div>`;
+  const porTipo = t => alertas.filter(a => a.tipo === t).length;
   return `
     <section class="ov-hero">
       <span class="ov-blob o" aria-hidden="true"></span><span class="ov-blob l" aria-hidden="true"></span><span class="ov-blob g" aria-hidden="true"></span><span class="ov-blob c" aria-hidden="true"></span>
@@ -223,22 +297,39 @@ function overview() {
       <img class="ov-logo" src="assets/grupo-brisa-branco.png" alt="Grupo Brisa" width="640" height="498">
       <span class="ov-faixa" aria-hidden="true"></span>
     </section>
+    <div class="kpis ov-kpis" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+      ${kpi('Marcas na meta', comDados.length ? `${acima} de ${comDados.length}` : '–', comDados.length ? 'com NPS igual ou acima da meta' : 'ainda sem dados', def('meta'), true)}
+      ${kpi('Respostas', totalResp ? fmt(totalResp) : '–', `NPS de ${comDados.length} de ${BRANDS.length} marcas`, def('respostas'))}
+      ${kpi('Alertas', fmt(alertas.length), alertas.length ? `${porTipo('Marca')} marca · ${porTipo('Driver')} driver · ${porTipo('Causa raiz')} causa raiz` : 'nada abaixo da meta', info('Alertas', 'Marcas, drivers e causas raiz com NPS abaixo da meta da marca. Causas com menos de 30 menções não contam.'))}
+      ${kpi('Tabs com dados', `${tabsCom} de ${tabsVivas}`, 'tabs que já funcionam no protótipo', info('Tabs com dados', 'Quantas das tabs que funcionam neste protótipo já têm um Excel carregado neste browser.'))}
+    </div>
+    ${alertasHtml(alertas)}
     <div class="ov-bar">
       <h2>Marcas</h2>
       <span class="muted">${comDados.length} de ${BRANDS.length} com dados${totalResp ? ` · ${fmt(totalResp)} respostas` : ''}</span>
       <span class="sep"></span>
       ${dataMetas() ? `<span class="muted">Metas atualizadas a ${formatarData(dataMetas())}</span>` : ''}
       <button class="btn btn-secondary btn-sm" data-act="metas">${icon('target')} Editar metas</button>
+      ${menuExportar(true)}
     </div>
-    <div class="ov-grid">${dados.map(({ b, rec, r, m }) => `
+    <div class="ov-grid">${dados.map(({ b, rec, r, m, pior, comDados: n, vivas, alertas: al }) => `
       <div class="ov-card" style="${tileVars(b)};--font-b:${b.font}, 'Noto Sans', sans-serif">
         <div class="top"><span class="tile mark">${logo(b.icon)}</span><b>${esc(b.name)}</b>
           ${r ? `<span class="badge ${r.nps >= m ? 'good' : 'bad'}" title="${r.nps >= m ? 'Meta atingida' : 'Abaixo da meta'}">${sinal(r.nps - m)} vs meta</span>` : '<span class="badge">Sem dados</span>'}</div>
         ${r ? `<div class="val"><b class="num">${fmt(r.nps)}</b><span class="muted">NPS · ${fmt(r.total)} respostas</span></div>
           <div class="compo" style="height:10px" aria-hidden="true"><div class="d" style="flex:${r.pctD}"></div><div class="n" style="flex:${r.pctN}"></div><div class="p" style="flex:${r.pctP};background:${b.colors.main}"></div></div>
-          <div class="muted">${esc(formatarPeriodo(rec.data.periodo))}${rec.exemplo ? ' · dados de exemplo' : ''}</div>`
-        : `<div class="wait">A aguardar dados da tab NPS</div>`}
+          <div class="ov-dnp num"><span><i class="d"></i>Detratores ${fmt(r.pctD)}%</span><span><i class="n"></i>Neutros ${fmt(r.pctN)}%</span><span><i class="p" style="background:${b.colors.main}"></i>Promotores ${fmt(r.pctP)}%</span></div>
+          <dl class="ov-mais">
+            <div><dt>Média</dt><dd class="num">${fmt(r.media, 1)}</dd></div>
+            <div><dt>Período</dt><dd>${esc(formatarPeriodo(rec.data.periodo))}</dd></div>
+            ${vivas > 1 ? `<div><dt>Tabs com dados</dt><dd class="num">${n} de ${vivas}</dd></div>` : ''}
+            ${pior ? `<div class="larga"><dt>Pior causa raiz</dt><dd><span class="badge ${pior.nps < m ? 'bad' : 'good'} num">${fmt(pior.nps)}</span> ${esc(pior.nome)}</dd></div>` : ''}
+          </dl>
+          ${r.total < LIMITES.poucasRespostas ? `<div class="badge mid">Poucas respostas ${def('amostra')}</div>` : ''}
+          ${rec.exemplo ? '<div class="muted">Dados de exemplo</div>' : ''}`
+        : `<div class="wait">${vivas ? 'A aguardar dados da tab NPS' : 'NPS ainda sem acesso'}</div>`}
         <div class="meta">${icon('target')} Meta <b>${m}</b>
+          ${al.length ? `<span class="badge bad" title="Abaixo da meta">${al.length} ${al.length === 1 ? 'alerta' : 'alertas'}</span>` : ''}
           ${ativa(b, b.tabs[0]) ? `<a class="btn btn-ghost btn-sm" href="#/${b.id}/nps" style="margin-left:auto">Abrir ${icon('chevron')}</a>` : ''}</div>
       </div>`).join('')}
     </div>
@@ -248,6 +339,21 @@ function overview() {
       <div id="ch-ov" class="chart"></div>
       <div class="ov-eixo" id="ov-eixo" aria-hidden="true">${BRANDS.map(b => `<span>${esc(b.name)}</span>`).join('')}</div>
     </section>`;
+}
+
+// Lista de alertas da Overview, agrupada por marca
+function alertasHtml(alertas) {
+  if (!alertas.length) return BRANDS.some(b => store.get(b.id, 'nps')) ? `<div class="faixa good" role="status">${icon('check')}<div><b>Sem alertas.</b> Marcas, drivers e causas raiz com dados estão na meta ou acima.</div></div>` : '';
+  const marcas = [...new Set(alertas.map(a => a.b))];
+  return `<section class="card ov-alertas" aria-labelledby="h-al">
+    <div class="card-head"><h3 id="h-al">${icon('alert')} Abaixo da meta ${info('Alertas', 'Drivers e causas raiz usam a meta da marca. Causas com menos de 30 menções e "Outra"/"Sem sugestões" não contam.')}</h3></div>
+    <div class="al-grupos">${marcas.map(b => `
+      <div class="al-grupo" style="${tileVars(b)}">
+        <div class="al-marca"><span class="tile mark">${logo(b.icon)}</span><b>${esc(b.name)}</b><span class="muted">meta ${meta(b.id)}</span></div>
+        <ul>${alertas.filter(a => a.b === b).map(a => `<li><span class="al-tipo">${a.tipo}</span><a href="${a.href}">${esc(a.nome)}</a><span class="badge bad num">${fmt(a.nps)}</span></li>`).join('')}</ul>
+      </div>`).join('')}
+    </div>
+  </section>`;
 }
 
 // Põe a linha de nomes por baixo das barras e o logótipo de cada marca dentro da barra do NPS
@@ -297,6 +403,32 @@ function montarOverview() {
   }));
 }
 
+// ---------- Exportar ----------
+async function exportar(oque, id) {
+  const r = rota();
+  try {
+    toast('A preparar o PowerPoint…');
+    if (!r.brand) {
+      await exportarOverview(GROUP, dadosOverview(), todosAlertas());
+    } else if (oque === 'marca') {
+      const itens = r.brand.tabs.filter(t => ativa(r.brand, t) && store.get(r.brand.id, t.id)).map(t => {
+        const rec = store.get(r.brand.id, t.id);
+        return { tab: t, e: ANALISES[t.id].view.exportar(rec, r.brand, meta(r.brand.id)), sub: formatarPeriodo(rec.data.periodo) };
+      });
+      await exportarMarca(r.brand, itens);
+    } else {
+      const rec = store.get(r.brand.id, r.tab.id);
+      const e = ANALISES[r.tab.id].view.exportar(rec, r.brand, meta(r.brand.id));
+      const sub = formatarPeriodo(rec.data.periodo) + (rec.exemplo ? ' · dados de exemplo' : '');
+      if (oque === 'grafico') await exportarGrafico(r.brand, r.tab, e, id, sub);
+      else await exportarTab(r.brand, r.tab, e, sub);
+    }
+    toast('PowerPoint descarregado.');
+  } catch (err) {
+    toast(err.message || 'Não consegui exportar.');
+  }
+}
+
 // ---------- Render ----------
 const $ = s => document.querySelector(s);
 
@@ -322,25 +454,42 @@ function render() {
     const A = ANALISES[r.tab.id];
     const rec = store.get(r.brand.id, r.tab.id);
     if (rec && ativa(r.brand, r.tab)) A.view.mount(rec, r.brand, meta(r.brand.id));
+    $('#file').multiple = !!A?.view.multi;
     ligarDrop();
   }
 }
 
 // ---------- Ações ----------
-async function carregar(file) {
+// Tabs desta marca (que funcionam) onde um ficheiro deste tipo entra
+function sugestoesPara(rows, brand, tabAtual) {
+  const tipo = identificar(rows);
+  if (!tipo) return [];
+  return TIPOS[tipo].tabs.map(id => brand.tabs.find(t => t.id === id)).filter(t => t && t.id !== tabAtual.id && ativa(brand, t))
+    .map(t => ({ b: brand.id, id: t.id, nome: t.name }));
+}
+
+async function carregar(files) {
   const r = rota();
-  if (!r.brand || !file) return;
+  files = [...(files || [])].filter(Boolean);
+  if (!r.brand || !files.length) return;
   const A = ANALISES[r.tab.id];
-  try {
-    const rows = await lerPrimeiraFolha(file);
-    const data = A.parse(rows);
-    store.set(r.brand.id, r.tab.id, { fileName: file.name, savedAt: new Date().toISOString(), data });
-    erro = null;
-    toast(`${file.name} carregado.`);
-  } catch (e) {
-    erro = e instanceof FicheiroErrado ? e.message : `Não consegui ler o ficheiro (${e.message}).`;
-    if (e.name === 'QuotaExceededError') erro = 'A memória do browser para o Stater está cheia. Apaga dados de outras tabs e tenta de novo.';
+  if (!A.view.multi) files = files.slice(0, 1);
+  erro = null;
+  let ok = 0;
+  for (const file of files) {
+    let rows = null;
+    try {
+      rows = await lerPrimeiraFolha(file);
+      const data = A.parse(rows);
+      const ant = store.get(r.brand.id, r.tab.id);
+      store.set(r.brand.id, r.tab.id, { fileName: file.name, savedAt: new Date().toISOString(), data: A.view.multi ? A.view.juntar(ant?.exemplo ? null : ant, data, file.name) : data });
+      ok++;
+    } catch (e) {
+      erro = { ficheiro: file.name, msg: e instanceof FicheiroErrado ? e.message : `Não consegui ler o ficheiro (${e.message}).`, faltas: e.faltas || [], sugestoes: rows ? sugestoesPara(rows, r.brand, r.tab) : [] };
+      if (e.name === 'QuotaExceededError') erro = { msg: 'A memória do browser para o Stater está cheia. Apaga dados de outras tabs e tenta de novo.' };
+    }
   }
+  if (ok) toast(ok === 1 ? `${files.length === 1 ? files[0].name : '1 ficheiro'} carregado.` : `${ok} ficheiros carregados.`);
   render();
 }
 
@@ -349,7 +498,7 @@ function ligarDrop() {
   if (!d) return;
   d.addEventListener('dragover', e => { e.preventDefault(); d.classList.add('is-over'); });
   d.addEventListener('dragleave', () => d.classList.remove('is-over'));
-  d.addEventListener('drop', e => { e.preventDefault(); d.classList.remove('is-over'); carregar(e.dataTransfer.files[0]); });
+  d.addEventListener('drop', e => { e.preventDefault(); d.classList.remove('is-over'); carregar(e.dataTransfer.files); });
 }
 
 document.addEventListener('click', async e => {
@@ -362,9 +511,26 @@ document.addEventListener('click', async e => {
     $(`#sidebar [data-toggle="${id}"]`)?.focus();
     return;
   }
+  // Fecha o menu Exportar ao clicar fora dele
+  document.querySelectorAll('details.menu-exp[open]').forEach(m => { if (!m.contains(e.target) || e.target.closest('[data-act]')) m.open = false; });
+  const ex = e.target.closest('[data-exp]');
+  if (ex) { exportar('grafico', ex.dataset.exp); return; }
   const b = e.target.closest('[data-act]');
   if (!b || b.disabled) return;
   const r = rota();
+  if (b.dataset.act === 'exp-tab') exportar('tab');
+  if (b.dataset.act === 'exp-marca') exportar('marca');
+  if (b.dataset.act === 'exp-pdf') imprimir();
+  if (b.dataset.act === 'rm-ficheiro' && r.brand) {
+    const rec = store.get(r.brand.id, r.tab.id);
+    const f = rec?.data.ficheiros?.[+b.dataset.i];
+    if (f && await confirmar(`Tirar o driver "${f.driver}"?`, 'Sai só o Excel deste driver. Os outros ficam.', 'Tirar')) {
+      const ficheiros = rec.data.ficheiros.filter((_, i) => i !== +b.dataset.i);
+      if (ficheiros.length) store.set(r.brand.id, r.tab.id, { ...rec, data: { ...rec.data, ficheiros, periodo: ficheiros[0].periodo, filtros: ficheiros[0].filtros } });
+      else store.del(r.brand.id, r.tab.id);
+      render();
+    }
+  }
   if (b.dataset.act === 'upload') $('#file').click();
   if (b.dataset.act === 'metas') editarMetas();
   if (b.dataset.act === 'sample' && r.brand) {
@@ -383,7 +549,7 @@ document.addEventListener('click', async e => {
   }
 });
 
-$('#file').addEventListener('change', e => { carregar(e.target.files[0]); e.target.value = ''; });
+$('#file').addEventListener('change', e => { carregar(e.target.files); e.target.value = ''; });
 // As tabs de cada marca só abrem e fecham pela seta do menu
 addEventListener('hashchange', () => { erro = null; render(); window.scrollTo({ top: 0 }); });
 ligarTooltips();

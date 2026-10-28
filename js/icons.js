@@ -38,6 +38,10 @@ const P = {
   x: '<path d="M6 6l12 12M18 6L6 18"/>',
   table: '<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 9.5v10"/>',
   chart: '<path d="M4 19.5h16"/><path d="M5 15l4.5-4.5 3.5 3 6-6.5"/>',
+  download: '<path d="M12 4v11M7.5 10.5L12 15l4.5-4.5"/><path d="M4.5 15v3.5a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V15"/>',
+  slides: '<rect x="3.5" y="4.5" width="17" height="12" rx="2"/><path d="M12 16.5v3.5M8.5 20h7"/><path d="M7.5 12.5l3-3 2.5 2 3.5-3.5"/>',
+  print: '<path d="M7 8.5V3.5h10v5"/><rect x="3.5" y="8.5" width="17" height="8" rx="2"/><path d="M7 14h10v6.5H7z"/>',
+  alert: '<path d="M12 4l9 15.5H3L12 4z"/><path d="M12 10v4.5"/><path d="M12 17.3h.01" stroke-width="2.4"/>',
   sort: '<path d="M8 5v14M4.5 15.5L8 19l3.5-3.5M16 19V5M12.5 8.5L16 5l3.5 3.5"/>',
 };
 

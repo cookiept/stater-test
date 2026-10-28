@@ -5,6 +5,7 @@ export const exemplos = {
     data: {
       contagens: [310, 160, 170, 180, 150, 330, 420, 760, 1840, 2310, 8070],
       periodo: { inicio: '2026-07-01T00:00:00.000Z', fim: '2026-09-30T00:00:00.000Z' },
+      filtros: [{ campo: 'Data de início', valor: '1 jul 2026 a 30 set 2026', data: true }],
     },
   },
   'causa-raiz': {
@@ -23,6 +24,22 @@ export const exemplos = {
       semRespostas: ['Meios de pagamento'],
       amostraGrupo: { d: 1300, n: 2100, p: 8600 },
       periodo: { inicio: '2026-07-01T00:00:00.000Z', fim: '2026-09-30T00:00:00.000Z' },
+      filtros: [{ campo: 'Data de início', valor: '1 jul 2026 a 30 set 2026', data: true }],
     },
+  },
+  molho: {
+    fileName: 'Exemplo – 3 drivers',
+    data: (() => {
+      const periodo = { inicio: '2026-07-01T00:00:00.000Z', fim: '2026-09-30T00:00:00.000Z' };
+      const filtros = [{ campo: 'Data de início', valor: '1 jul 2026 a 30 set 2026', data: true }];
+      const drv = (driver, amostraGrupo, causas) => ({ driver, fileName: `Exemplo – ${driver}.xlsx`, periodo, filtros, amostraGrupo, semRespostas: [],
+        causas: causas.map(([nome, d, n, p]) => ({ nome, d, n, p, total: d + n + p })) });
+      const ficheiros = [
+        drv('Chegada', { d: 420, n: 610, p: 1900 }, [['Tempo de espera', 96, 140, 310], ['Estacionamento', 58, 45, 61], ['Sinalização', 4, 7, 12]]),
+        drv('Atendimento', { d: 300, n: 520, p: 2200 }, [['Simpatia da equipa', 9, 30, 196], ['Rapidez no balcão', 77, 64, 90], ['Outra', 6, 4, 9]]),
+        drv('Oferta', { d: 610, n: 540, p: 1300 }, [['Preço dos produtos', 188, 71, 102], ['Variedade da oferta', 22, 39, 98], ['Limpeza das instalações', 41, 66, 248]]),
+      ];
+      return { ficheiros, periodo, filtros };
+    })(),
   },
 };
