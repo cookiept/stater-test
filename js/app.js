@@ -1,16 +1,16 @@
 // Stater · protótipo. Uma página, menu de marcas à esquerda, cada tab lê o seu Excel.
-import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1648';
-import { icon } from './icons.js?v=20261028-1648';
-import { logo } from './logos.js?v=20261028-1648';
-import { esc, info, def, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1648';
-import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData, identificar, TIPOS } from './excel.js?v=20261028-1648';
-import { resumoNps, fmt, sinal, LIMITES, enriquecerCausas, causasFiaveis, destaques } from './stats.js?v=20261028-1648';
-import { exportarGrafico, exportarTab, exportarOverview, imprimir } from './export.js?v=20261028-1648';
-import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1648';
-import * as vNps from './views/nps.js?v=20261028-1648';
-import * as vCausas from './views/causas.js?v=20261028-1648';
-import * as vMolho from './views/molho.js?v=20261028-1648';
-import { exemplos } from './exemplo.js?v=20261028-1648';
+import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1651';
+import { icon } from './icons.js?v=20261028-1651';
+import { logo } from './logos.js?v=20261028-1651';
+import { esc, info, def, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1651';
+import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData, identificar, TIPOS } from './excel.js?v=20261028-1651';
+import { resumoNps, fmt, sinal, LIMITES, enriquecerCausas, causasFiaveis, destaques } from './stats.js?v=20261028-1651';
+import { exportarGrafico, exportarTab, exportarOverview, imprimir } from './export.js?v=20261028-1651';
+import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1651';
+import * as vNps from './views/nps.js?v=20261028-1651';
+import * as vCausas from './views/causas.js?v=20261028-1651';
+import * as vMolho from './views/molho.js?v=20261028-1651';
+import { exemplos } from './exemplo.js?v=20261028-1651';
 
 // Tabs que funcionam no protótipo
 const ANALISES = {
@@ -300,7 +300,6 @@ function overview() {
       ${kpi('Alertas', fmt(alertas.length), alertas.length ? `${porTipo('Marca')} marca · ${porTipo('Driver')} driver · ${porTipo('Causa raiz')} causa raiz` : 'nada abaixo da meta', info('Alertas', 'Marcas, drivers e causas raiz com NPS abaixo da meta da marca. Causas com menos de 30 menções não contam.'))}
       ${kpi('Tabs com dados', `${tabsCom} de ${tabsVivas}`, 'tabs que já funcionam no protótipo', info('Tabs com dados', 'Quantas das tabs que funcionam neste protótipo já têm um Excel carregado neste browser.'))}
     </div>
-    ${alertasHtml(alertas)}
     <div class="ov-bar">
       <h2>Marcas</h2>
       <span class="muted">${comDados.length} de ${BRANDS.length} com dados${totalResp ? ` · ${fmt(totalResp)} respostas` : ''}</span>
@@ -326,7 +325,6 @@ function overview() {
           ${rec.exemplo ? '<div class="muted">Dados de exemplo</div>' : ''}`
         : `<div class="wait">${vivas ? 'A aguardar dados da tab NPS' : 'NPS ainda sem acesso'}</div>`}
         <div class="meta">${icon('target')} Meta <b>${m}</b>
-          ${al.length ? `<span class="badge bad" title="Abaixo da meta">${al.length} ${al.length === 1 ? 'alerta' : 'alertas'}</span>` : ''}
           ${ativa(b, b.tabs[0]) ? `<a class="btn btn-ghost btn-sm" href="#/${b.id}/nps" style="margin-left:auto">Abrir ${icon('chevron')}</a>` : ''}</div>
       </div>`).join('')}
     </div>
@@ -395,8 +393,12 @@ function montarOverview() {
     },
     yaxis: { min: -20, max: 100, tickAmount: 4 },
     xaxis: { axisBorder: { show: false }, axisTicks: { show: false }, labels: { show: false } },
-    tooltip: { shared: true, intersect: false, y: { formatter: v => (v == null ? 'sem dados' : fmt(v)) } },
-    states: { hover: { filter: { type: 'darken', value: 0.9 } } },
+    // Tooltip próprio: a bolinha do NPS tem a cor da marca, como a barra
+    tooltip: { shared: true, intersect: false, custom: ({ dataPointIndex: i }) => { const d = dados[i]; if (!d) return '';
+      const linha = (cor, rot, v) => `<div class="ov-tt-l"><i style="background:${cor}"></i>${rot}<b>${v == null ? 'sem dados' : fmt(v)}</b></div>`;
+      return `<div class="ov-tt"><div class="ov-tt-t">${esc(d.b.name)}</div>${linha(d.b.colors.main, 'NPS', d.r ? d.r.nps : null)}${linha('#d6dde3', 'Meta', d.m)}</div>`; } },
+    // No hover as barras mantêm a cor da marca
+    states: { hover: { filter: { type: 'none' } }, active: { filter: { type: 'none' } } },
   }));
 }
 

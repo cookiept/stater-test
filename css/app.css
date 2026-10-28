@@ -673,3 +673,12 @@ dialog .row { display: flex; gap: 8px; justify-content: flex-end; }
 .tbl tr.is-zero td { color: var(--text-disabled); }
 .tbl tr.is-zero .name { color: var(--text-tertiary); font-weight: 500; }
 .minibar.vazia { background: var(--surface-low); }
+/* Overview: tooltip do gráfico com as cores de cada marca; meta mais visível nos cartões */
+.ov-tt { padding: 8px 12px; font-size: 12.5px; min-width: 150px; }
+.ov-tt-t { font-weight: 700; margin-bottom: 4px; }
+.ov-tt-l { display: flex; align-items: center; gap: 8px; line-height: 22px; }
+.ov-tt-l i { width: 10px; height: 10px; border-radius: 50%; }
+.ov-tt-l b { margin-left: auto; padding-left: 16px; }
+.ov-card .meta { font-size: 14px; color: var(--text-secondary); }
+.ov-card .meta .ico { width: 17px; height: 17px; }
+.ov-card .meta b { font-size: 17px; }
