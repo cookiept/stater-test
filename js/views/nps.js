@@ -1,9 +1,9 @@
 // Tab "NPS": distribuição das notas 0–10 (Stats iQ Describe).
-import { resumoNps, fmt, sinal, LIMITES } from '../stats.js?v=20261028-1605';
-import { base, junta, desenhar } from '../charts.js?v=20261028-1605';
-import { info, esc, def, GLOSSARIO, btnPptx, faixa } from '../ui.js?v=20261028-1605';
-import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1605';
-import { icon } from '../icons.js?v=20261028-1605';
+import { resumoNps, fmt, sinal, LIMITES } from '../stats.js?v=20261028-1609';
+import { base, junta, desenhar } from '../charts.js?v=20261028-1609';
+import { info, esc, def, GLOSSARIO, btnPptx, faixa } from '../ui.js?v=20261028-1609';
+import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1609';
+import { icon } from '../icons.js?v=20261028-1609';
 
 const estadoMeta = (nps, meta) => (nps > meta ? 'Acima da meta' : nps === meta ? 'Na meta' : 'Abaixo da meta');
 
@@ -64,7 +64,10 @@ export function html(rec, meta) {
     <div class="grid-2">
       <section class="card" aria-labelledby="h-gauge">
         <div class="card-head"><h3 id="h-gauge">NPS face à meta ${def('meta')}</h3>${btnPptx('gauge')}</div>
-        <div id="ch-gauge" class="chart" role="img" aria-label="NPS ${fmt(r.nps)} com meta ${meta}"></div>
+        <div class="gauge-wrap">
+          <div id="ch-gauge" class="chart" role="img" aria-label="NPS ${fmt(r.nps)}, ${estadoMeta(r.nps, meta).toLowerCase()} de ${meta}"></div>
+          <span class="meta-pill ${r.nps >= meta ? 'up' : 'down'}" title="${estadoMeta(r.nps, meta)}">${icon(r.nps >= meta ? 'arrowUp' : 'arrowDown')}<span>Meta <b class="num">${meta}</b></span></span>
+        </div>
         <div style="flex:1"></div><div class="compo" aria-hidden="true">
           <div class="d" style="flex:${r.pctD}">${r.pctD >= 6 ? fmt(r.pctD) + '%' : ''}</div>
           <div class="n" style="flex:${r.pctN}">${r.pctN >= 6 ? fmt(r.pctN) + '%' : ''}</div>
@@ -106,8 +109,8 @@ export function mount(rec, brand, meta) {
         startAngle: -95, endAngle: 95, hollow: { size: '62%' },
         track: { background: '#f0f0f0', strokeWidth: '100%', margin: 0 },
         dataLabels: {
-          name: { show: true, offsetY: 26, color: r.nps >= meta ? '#10641d' : '#ad2c19', fontSize: '12px', fontWeight: 600, formatter: () => `Meta ${meta} · ${estadoMeta(r.nps, meta)}` },
-          value: { offsetY: -14, fontSize: '40px', fontWeight: 700, color: '#1a1a1a', formatter: () => fmt(r.nps) },
+          name: { show: false },
+          value: { offsetY: -6, fontSize: '40px', fontWeight: 700, color: '#1a1a1a', formatter: () => fmt(r.nps) },
         },
       },
     },
@@ -172,7 +175,7 @@ export function exportar(rec, brand, meta) {
           s.addText([
             { text: 'NPS', options: { fontSize: 14, color: '767676', breakLine: true } },
             { text: fmt(r.nps), options: { fontSize: 60, bold: true, color: '1A1A1A', breakLine: true } },
-            { text: `Meta ${meta} · ${estadoMeta(r.nps, meta)}`, options: { fontSize: 14, color: r.nps >= meta ? '10641D' : 'AD2C19' } },
+            { text: `${r.nps >= meta ? '▲' : '▼'}  Meta ${meta}`, options: { fontSize: 14, color: r.nps >= meta ? '10641D' : 'AD2C19' } },
           ], { x: 8, y: 2.4, w: 4.8, h: 2.6, fontFace: b.fontFace, valign: 'middle' });
         },
       },

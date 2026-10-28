@@ -1,16 +1,16 @@
 // Stater · protótipo. Uma página, menu de marcas à esquerda, cada tab lê o seu Excel.
-import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1605';
-import { icon } from './icons.js?v=20261028-1605';
-import { logo } from './logos.js?v=20261028-1605';
-import { esc, info, def, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1605';
-import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData, identificar, TIPOS } from './excel.js?v=20261028-1605';
-import { resumoNps, fmt, sinal, LIMITES, enriquecerCausas, causasFiaveis, destaques } from './stats.js?v=20261028-1605';
-import { exportarGrafico, exportarTab, exportarOverview, imprimir } from './export.js?v=20261028-1605';
-import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1605';
-import * as vNps from './views/nps.js?v=20261028-1605';
-import * as vCausas from './views/causas.js?v=20261028-1605';
-import * as vMolho from './views/molho.js?v=20261028-1605';
-import { exemplos } from './exemplo.js?v=20261028-1605';
+import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1609';
+import { icon } from './icons.js?v=20261028-1609';
+import { logo } from './logos.js?v=20261028-1609';
+import { esc, info, def, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1609';
+import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData, identificar, TIPOS } from './excel.js?v=20261028-1609';
+import { resumoNps, fmt, sinal, LIMITES, enriquecerCausas, causasFiaveis, destaques } from './stats.js?v=20261028-1609';
+import { exportarGrafico, exportarTab, exportarOverview, imprimir } from './export.js?v=20261028-1609';
+import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1609';
+import * as vNps from './views/nps.js?v=20261028-1609';
+import * as vCausas from './views/causas.js?v=20261028-1609';
+import * as vMolho from './views/molho.js?v=20261028-1609';
+import { exemplos } from './exemplo.js?v=20261028-1609';
 
 // Tabs que funcionam no protótipo
 const ANALISES = {
@@ -165,7 +165,7 @@ function filtrosHtml(rec) {
 // Menu "Exportar": PDF ou PowerPoint (com capa)
 function menuExportar() {
   return `<details class="menu-exp">
-    <summary class="btn btn-secondary btn-sm">${icon('download')} Exportar</summary>
+    <summary class="btn btn-secondary btn-sm" role="button" aria-haspopup="menu">${icon('download')} Exportar</summary>
     <div class="menu-lista" role="menu">
       <button type="button" role="menuitem" data-act="exp-pdf" title="Abre a janela de impressão: escolhe Guardar como PDF">${icon('print')}<b>PDF</b></button>
       <button type="button" role="menuitem" data-act="exp-tab" title="Com capa e gráficos editáveis">${icon('slides')}<b>PowerPoint</b></button>
