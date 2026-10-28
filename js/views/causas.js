@@ -1,9 +1,9 @@
 // Tab "NPS por Causa Raiz": Relate de Group NPS com a causa raiz (resposta múltipla).
-import { enriquecerCausas, comZeros, npsDe, fmt, sinal, destaques, causasFiaveis } from '../stats.js?v=20261028-1646';
-import { base, junta, desenhar } from '../charts.js?v=20261028-1646';
-import { info, esc, def, btnPptx, faixa } from '../ui.js?v=20261028-1646';
-import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1646';
-import { icon } from '../icons.js?v=20261028-1646';
+import { enriquecerCausas, comZeros, npsDe, fmt, sinal, destaques, causasFiaveis } from '../stats.js?v=20261028-1648';
+import { base, junta, desenhar } from '../charts.js?v=20261028-1648';
+import { info, esc, def, btnPptx, faixa } from '../ui.js?v=20261028-1648';
+import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1648';
+import { icon } from '../icons.js?v=20261028-1648';
 
 export const npsGlobal = data => {
   const a = data.amostraGrupo;
@@ -66,7 +66,6 @@ export function html(rec, meta) {
       ${kpi('Menções', fmt(mencoes), 'uma pessoa pode escolher várias', def('mencoes'))}
       ${kpi('Abaixo da meta', fmt(abaixo.length), abaixo.length ? 'causas com NPS abaixo da meta' : 'nenhuma causa', def('meta'))}
     </div>
-    ${destaquesHtml(dz)}
     <section class="card" aria-labelledby="h-comp">
       <div class="card-head">
         <h3 id="h-comp">Quem escolheu cada causa ${info('Composição por causa', 'Para cada causa, a parte de detratores, neutros e promotores entre quem a escolheu. Ordenado por número de menções.')}</h3>
