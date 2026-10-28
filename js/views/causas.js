@@ -1,14 +1,17 @@
 // Tab "NPS por Causa Raiz": Relate de Group NPS com a causa raiz (resposta múltipla).
-import { enriquecerCausas, npsDe, fmt, sinal, destaques, causasFiaveis } from '../stats.js?v=20261028-1611';
-import { base, junta, desenhar } from '../charts.js?v=20261028-1611';
-import { info, esc, def, btnPptx, faixa } from '../ui.js?v=20261028-1611';
-import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1611';
-import { icon } from '../icons.js?v=20261028-1611';
+import { enriquecerCausas, comZeros, npsDe, fmt, sinal, destaques, causasFiaveis } from '../stats.js?v=20261028-1635';
+import { base, junta, desenhar } from '../charts.js?v=20261028-1635';
+import { info, esc, def, btnPptx, faixa } from '../ui.js?v=20261028-1635';
+import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1635';
+import { icon } from '../icons.js?v=20261028-1635';
 
 export const npsGlobal = data => {
   const a = data.amostraGrupo;
   return a ? { nps: npsDe(a.d, a.p, a.d + a.n + a.p), total: a.d + a.n + a.p } : null;
 };
+
+// Todas as causas do Excel, com as de 0 menções no fim
+export const todasCausas = data => enriquecerCausas(comZeros(data.causas, data.semRespostas));
 
 export function chips(rec) {
   const g = npsGlobal(rec.data);
@@ -19,7 +22,7 @@ export function chips(rec) {
 // Otimizado: "Outra" e "Sem sugestões" e causas com menos de 30 menções não entram no melhor e pior.
 export function resumo(rec) {
   const cs = enriquecerCausas(rec.data.causas).filter(c => !c.semSugestao);
-  const mencoes = enriquecerCausas(rec.data.causas).reduce((a, c) => a + c.total, 0);
+  const mencoes = rec.data.causas.reduce((a, c) => a + c.total, 0);
   const fiaveis = cs.filter(c => !c.amostraPequena);
   const lista = fiaveis.length ? fiaveis : cs;
   const maior = [...cs].sort((a, b) => b.total - a.total)[0];
@@ -32,12 +35,13 @@ export function resumo(rec) {
   const pequenas = cs.filter(c => c.amostraPequena).length;
   const notas = [];
   if (pequenas) notas.push(`${pequenas === 1 ? 'Uma causa tem' : `${pequenas} causas têm`} menos de 30 menções e não entra${pequenas === 1 ? '' : 'm'} no melhor e pior.`);
-  if (rec.data.semRespostas?.length) notas.push(`${rec.data.semRespostas.length} opções sem menções neste período.`);
+  if (rec.data.semRespostas?.length) notas.push(`${rec.data.semRespostas.length === 1 ? 'Uma opção não teve' : `${rec.data.semRespostas.length} opções não tiveram`} menções neste período: aparece${rec.data.semRespostas.length === 1 ? '' : 'm'} no fim, com 0.`);
   return { blocos, notas };
 }
 
 export function html(rec, meta) {
-  const cs = enriquecerCausas(rec.data.causas);
+  const cs = todasCausas(rec.data);
+  const nMenc = cs.filter(c => !c.zero).length;
   const g = npsGlobal(rec.data);
   const mencoes = cs.reduce((a, c) => a + c.total, 0);
   const kpi = (rot, val, det, k, hero = false) => `
@@ -48,7 +52,7 @@ export function html(rec, meta) {
     ${abaixo.length ? faixa('bad', `${abaixo.length === 1 ? 'Uma causa está' : `${abaixo.length} causas estão`} abaixo da meta (${meta}):`, abaixo.map(c => `${esc(c.nome)} <b class="num">${fmt(c.nps)}</b>`).join(' · ')) : ''}
     <div class="kpis" style="grid-template-columns:repeat(4,minmax(0,1fr))">
       ${g ? kpi('NPS de quem respondeu', fmt(g.nps), `${fmt(g.total)} pessoas · meta ${meta}`, info('NPS de quem respondeu', 'NPS de todas as pessoas que viram esta pergunta, calculado a partir do tamanho de cada grupo (Sample Size) no Excel.'), true) : ''}
-      ${kpi('Causas com menções', fmt(cs.length), `de ${fmt(cs.length + (rec.data.semRespostas?.length || 0))} opções`, def('causa'))}
+      ${kpi('Causas com menções', fmt(nMenc), `de ${fmt(cs.length)} opções`, def('causa'))}
       ${kpi('Menções', fmt(mencoes), 'uma pessoa pode escolher várias', def('mencoes'))}
       ${kpi('Abaixo da meta', fmt(abaixo.length), abaixo.length ? 'causas com NPS abaixo da meta' : 'nenhuma causa', def('meta'))}
     </div>
@@ -100,7 +104,14 @@ export function destaquesHtml(dz, comDriver = false) {
 }
 
 export function linhas(cs, meta, pior, extra = () => '') {
-  return cs.map(c => `
+  return cs.map(c => c.zero ? `
+    <tr class="is-zero">
+      <td><span class="name">${esc(c.nome)}</span></td>${extra(c)}
+      <td class="r muted">–</td>
+      <td class="r num">0</td>
+      <td><div class="minibar vazia" aria-hidden="true"></div></td>
+      <td><span class="muted num">0%</span></td>
+    </tr>` : `
     <tr class="${c.amostraPequena ? 'is-pequena' : ''}">
       <td><span class="name">${esc(c.nome)}</span>${c.amostraPequena ? ` <span class="badge mid">poucas menções ${def('amostra')}</span>` : ''}</td>${extra(c)}
       <td class="r"><span class="badge ${c.nps < meta ? 'bad' : 'good'} num" title="${c.nps < meta ? 'Abaixo da meta' : 'Na meta ou acima'}">${fmt(c.nps)}</span></td>
@@ -111,7 +122,8 @@ export function linhas(cs, meta, pior, extra = () => '') {
 }
 
 export function mount(rec, brand, meta) {
-  const cs = enriquecerCausas(rec.data.causas);
+  const cs = todasCausas(rec.data);
+  const comM = cs.filter(c => !c.zero);
   const dz = destaques(cs);
   const g = npsGlobal(rec.data);
   const b = base(brand);
@@ -129,7 +141,7 @@ export function mount(rec, brand, meta) {
     plotOptions: { bar: { horizontal: true, barHeight: '62%', borderRadius: 4, borderRadiusApplication: 'around', borderRadiusWhenStacked: 'all' } },
     stroke: { width: 2, colors: ['#fff'] },
     dataLabels: { enabled: true, formatter: (v) => (v >= 8 ? `${fmt(v)}%` : ''), style: { fontSize: '11px', fontWeight: 600, colors: ['#fff', '#1a1a1a', brand.colors.on] }, dropShadow: { enabled: false } },
-    xaxis: { categories: cs.map(c => [c.nome.length > 34 ? c.nome.slice(0, 33) + '…' : c.nome, `${fmt(c.total)} menções · NPS ${fmt(c.nps)}`]), labels: { formatter: v => `${v}%` }, axisBorder: { show: false } },
+    xaxis: { categories: cs.map(c => [c.nome.length > 28 ? c.nome.slice(0, 27) + '…' : c.nome, c.zero ? '0 menções' : `${fmt(c.total)} menções · NPS ${fmt(c.nps)}`]), labels: { formatter: v => `${v}%` }, axisBorder: { show: false } },
     yaxis: { labels: { maxWidth: 300, style: { fontSize: '12px', colors: ['#1a1a1a'] } } },
     tooltip: { shared: true, intersect: false, y: { formatter: (v, { seriesIndex, dataPointIndex }) => `${fmt(v)} (${fmt([cs[dataPointIndex].pctD, cs[dataPointIndex].pctN, cs[dataPointIndex].pctP][seriesIndex], 1)}%)` } },
     grid: { xaxis: { lines: { show: true } }, yaxis: { lines: { show: false } } },
@@ -137,27 +149,27 @@ export function mount(rec, brand, meta) {
 
   desenhar(document.getElementById('ch-mat'), junta(b, {
     chart: { type: 'scatter', height: 340 },
-    series: cs.map(c => ({ name: c.nome, data: [[c.total, c.nps]] })),
-    colors: cs.map(c => (c.nps < meta ? '#db3a23' : brand.colors.main)),
+    series: comM.map(c => ({ name: c.nome, data: [[c.total, c.nps]] })),
+    colors: comM.map(c => (c.nps < meta ? '#db3a23' : brand.colors.main)),
     markers: { size: 11, strokeWidth: 2, strokeColors: '#fff', hover: { sizeOffset: 2 } },
-    xaxis: { type: 'numeric', tickAmount: 5, min: 0, max: Math.ceil(Math.max(...cs.map(c => c.total)) * 1.15), labels: { formatter: v => fmt(v) }, title: { text: 'Menções', style: { fontSize: '11px', fontWeight: 500, color: '#767676' } } },
-    yaxis: { min: Math.min(-20, Math.floor(Math.min(...cs.map(c => c.nps)) / 10) * 10 - 10), max: 100, tickAmount: 4, title: { text: 'NPS', style: { fontSize: '11px', fontWeight: 500, color: '#767676' } } },
+    xaxis: { type: 'numeric', tickAmount: 5, min: 0, max: Math.ceil(Math.max(...comM.map(c => c.total)) * 1.15), labels: { formatter: v => fmt(v) }, title: { text: 'Menções', style: { fontSize: '11px', fontWeight: 500, color: '#767676' } } },
+    yaxis: { min: Math.min(-20, Math.floor(Math.min(...comM.map(c => c.nps)) / 10) * 10 - 10), max: 100, tickAmount: 4, title: { text: 'NPS', style: { fontSize: '11px', fontWeight: 500, color: '#767676' } } },
     annotations: { yaxis: [
       { y: meta, borderColor: '#e0a400', strokeDashArray: 4, label: { text: `Meta ${meta}`, position: 'right', textAnchor: 'end', borderColor: '#ffc148', style: { background: '#ffc148', color: '#1a1a1a', fontWeight: 600 } } },
       ...(g ? [{ y: g.nps, borderColor: '#b4b4b4', strokeDashArray: 2, label: { text: `NPS geral ${fmt(g.nps)}`, position: 'left', textAnchor: 'start', borderColor: 'transparent', style: { background: '#f0f0f0', color: '#494949' } } }] : []),
     ] },
-    tooltip: { custom: ({ seriesIndex }) => { const c = cs[seriesIndex]; return `<div style="padding:10px 12px;font-size:12px"><b>${esc(c.nome)}</b><br>NPS ${fmt(c.nps)} · ${fmt(c.total)} menções</div>`; } },
+    tooltip: { custom: ({ seriesIndex }) => { const c = comM[seriesIndex]; return `<div style="padding:10px 12px;font-size:12px"><b>${esc(c.nome)}</b><br>NPS ${fmt(c.nps)} · ${fmt(c.total)} menções</div>`; } },
     grid: { xaxis: { lines: { show: true } } },
   }));
 
-  document.getElementById('lg-mat').innerHTML = cs.map(c => `<span><i style="background:${c.nps < meta ? '#db3a23' : brand.colors.main};border-radius:50%"></i>${esc(c.nome)} <b class="num">${fmt(c.nps)}</b></span>`).join('');
+  document.getElementById('lg-mat').innerHTML = comM.map(c => `<span><i style="background:${c.nps < meta ? '#db3a23' : brand.colors.main};border-radius:50%"></i>${esc(c.nome)} <b class="num">${fmt(c.nps)}</b></span>`).join('');
 
   // Tabela: ordenar e procurar
   const tbody = document.querySelector('#tbl-causas tbody');
   let chave = 'total', dir = -1, q = '';
   const pintar = () => {
     const lista = cs.filter(c => c.nome.toLowerCase().includes(q)).sort((a, b2) => {
-      if (a.semSugestao !== b2.semSugestao) return a.semSugestao - b2.semSugestao;
+      if (a.zero !== b2.zero) return a.zero - b2.zero;
       const x = a[chave], y = b2[chave];
       return (typeof x === 'string' ? x.localeCompare(y, 'pt') : x - y) * dir;
     });
@@ -182,7 +194,7 @@ export const graficoComposicao = (b, brand, cs, rot = c => c.nome) => (s, p) => 
   { name: 'Promotores', labels: cs.map(rot), values: cs.map(c => c.p) },
 ], { ...b, barDir: 'bar', barGrouping: 'percentStacked', barGapWidthPct: 45, catAxisOrientation: 'maxMin', chartColors: ['DB3A23', 'C4C4C4', hex(brand.colors.main)], showValue: false, catAxisLabelFontSize: 10, valAxisLabelFormatCode: '0%' });
 
-export const graficoMatriz = (b, brand, cs, meta) => (s, p) => s.addChart(p.ChartType.scatter, [
+export const graficoMatriz = (b, brand, todas, meta, cs = todas.filter(c => !c.zero)) => (s, p) => s.addChart(p.ChartType.scatter, [
   { name: 'Menções', values: cs.map(c => c.total) },
   { name: 'NPS', values: cs.map(c => c.nps), labels: cs.map(c => c.nome) },
 ], { ...b, chartColors: [hex(brand.colors.main)], lineSize: 0, lineDataSymbolSize: 12, showLegend: false, showLabel: true, dataLabelFormatScatter: 'custom', dataLabelPosition: 'r',
@@ -193,7 +205,7 @@ export const tabelaPptx = (b, brand, cs, meta, comDriver = false) => (s) => {
   const st = { fontFace: b.fontFace, fontSize: 10, color: '1A1A1A', valign: 'middle' };
   const linhasT = cs.map(c => [
     { text: c.nome, options: st }, ...(comDriver ? [{ text: c.driver, options: st }] : []),
-    { text: fmt(c.nps), options: { ...st, bold: true, align: 'right', color: c.nps < meta ? 'AD2C19' : '10641D' } },
+    { text: c.zero ? '–' : fmt(c.nps), options: { ...st, bold: true, align: 'right', color: c.zero ? '9A9A9A' : c.nps < meta ? 'AD2C19' : '10641D' } },
     { text: fmt(c.total), options: { ...st, align: 'right' } },
     { text: `${fmt(c.pctD)}%`, options: { ...st, align: 'right' } }, { text: `${fmt(c.pctN)}%`, options: { ...st, align: 'right' } }, { text: `${fmt(c.pctP)}%`, options: { ...st, align: 'right' } },
     { text: `${fmt(c.quota, 1)}%`, options: { ...st, align: 'right' } },
@@ -203,14 +215,14 @@ export const tabelaPptx = (b, brand, cs, meta, comDriver = false) => (s) => {
 };
 
 export function exportar(rec, brand, meta) {
-  const cs = enriquecerCausas(rec.data.causas);
+  const cs = todasCausas(rec.data);
   const g = npsGlobal(rec.data);
   const b = baseGrafico(brand);
   const abaixo = causasFiaveis(cs).filter(c => c.nps < meta);
   return {
     kpis: [
       ...(g ? [{ rot: 'NPS de quem respondeu', val: fmt(g.nps), det: `${fmt(g.total)} pessoas · meta ${meta}` }] : []),
-      { rot: 'Causas com menções', val: fmt(cs.length), det: `de ${fmt(cs.length + (rec.data.semRespostas?.length || 0))} opções` },
+      { rot: 'Causas com menções', val: fmt(cs.filter(c => !c.zero).length), det: `de ${fmt(cs.length)} opções` },
       { rot: 'Menções', val: fmt(cs.reduce((a, c) => a + c.total, 0)), det: 'uma pessoa pode escolher várias' },
       { rot: 'Abaixo da meta', val: fmt(abaixo.length), det: abaixo.map(c => c.nome).join(', ') || 'nenhuma causa' },
     ],

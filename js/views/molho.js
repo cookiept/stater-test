@@ -1,12 +1,12 @@
 // Tab "Todos ao molho" (Tabela única de causas): junta as causas raiz de todos os drivers numa só tabela.
 // Cada driver é um Excel "Relate" de Group NPS com a causa raiz desse driver; carregam-se vários de uma vez.
-import { enriquecerCausas, fmt, sinal, destaques, causasFiaveis } from '../stats.js?v=20261028-1611';
-import { base, junta, desenhar } from '../charts.js?v=20261028-1611';
-import { info, esc, def, btnPptx, faixa } from '../ui.js?v=20261028-1611';
-import { icon } from '../icons.js?v=20261028-1611';
-import { formatarPeriodo } from '../excel.js?v=20261028-1611';
-import { npsGlobal, destaquesHtml, linhas, tabelaPptx } from './causas.js?v=20261028-1611';
-import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1611';
+import { enriquecerCausas, comZeros, fmt, sinal, destaques, causasFiaveis } from '../stats.js?v=20261028-1635';
+import { base, junta, desenhar } from '../charts.js?v=20261028-1635';
+import { info, esc, def, btnPptx, faixa } from '../ui.js?v=20261028-1635';
+import { icon } from '../icons.js?v=20261028-1635';
+import { formatarPeriodo } from '../excel.js?v=20261028-1635';
+import { npsGlobal, destaquesHtml, linhas, tabelaPptx } from './causas.js?v=20261028-1635';
+import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1635';
 
 export const multi = true;
 
@@ -22,7 +22,7 @@ export function juntar(rec, novo, fileName) {
 
 // Todas as causas de todos os drivers, com o peso calculado sobre o total de menções
 function todas(rec) {
-  const lista = rec.data.ficheiros.flatMap(f => f.causas.map(c => ({ ...c, driver: f.driver })));
+  const lista = rec.data.ficheiros.flatMap(f => comZeros(f.causas, f.semRespostas, {}).map(c => ({ ...c, driver: f.driver })));
   return enriquecerCausas(lista);
 }
 
@@ -87,7 +87,7 @@ export function html(rec, meta) {
     ${abaixo.length ? faixa('bad', `${abaixo.length === 1 ? 'Uma causa está' : `${abaixo.length} causas estão`} abaixo da meta:`, abaixo.slice(0, 6).map(c => `${esc(c.nome)} <b class="num">${fmt(c.nps)}</b>`).join(' · ') + (abaixo.length > 6 ? ` e mais ${abaixo.length - 6} na tabela.` : '')) : ''}
     <div class="kpis" style="grid-template-columns:repeat(4,minmax(0,1fr))">
       ${kpi('Drivers', fmt(ds.length), dAbaixo.length ? `${dAbaixo.length} abaixo da meta` : `meta ${meta}`, def('driver'), true)}
-      ${kpi('Causas com menções', fmt(cs.length), 'em todos os drivers', def('causa'))}
+      ${kpi('Causas com menções', fmt(cs.filter(c => !c.zero).length), `de ${fmt(cs.length)} opções em todos os drivers`, def('causa'))}
       ${kpi('Menções', fmt(mencoes), 'uma pessoa pode escolher várias', def('mencoes'))}
       ${kpi('Causas abaixo da meta', fmt(abaixo.length), 'com 30 ou mais menções', def('meta'))}
     </div>
@@ -147,7 +147,7 @@ export function mount(rec, brand, meta) {
     grid: { xaxis: { lines: { show: true } }, yaxis: { lines: { show: false } } },
   }));
 
-  const top = [...cs].filter(c => !c.semSugestao).sort((a, c) => c.total - a.total).slice(0, 12);
+  const top = [...cs].filter(c => !c.zero && !c.semSugestao).sort((a, c) => c.total - a.total).slice(0, 12);
   desenhar(document.getElementById('ch-top'), junta(b, {
     chart: { type: 'bar', height: Math.max(220, top.length * 48 + 60), stacked: true },
     series: [
@@ -170,7 +170,7 @@ export function mount(rec, brand, meta) {
   const extra = c => `<td>${esc(c.driver)}</td>`;
   const pintar = () => {
     const lista = cs.filter(c => (!drv || c.driver === drv) && c.nome.toLowerCase().includes(q)).sort((a, c2) => {
-      if (a.semSugestao !== c2.semSugestao) return a.semSugestao - c2.semSugestao;
+      if (a.zero !== c2.zero) return a.zero - c2.zero;
       const x = a[chave], y = c2[chave];
       return (typeof x === 'string' ? x.localeCompare(y, 'pt') : x - y) * dir;
     });
@@ -194,11 +194,11 @@ export function exportar(rec, brand, meta) {
   const ds = drivers(rec, meta).filter(d => d.nps != null);
   const b = baseGrafico(brand);
   const abaixo = causasFiaveis(cs).filter(c => c.nps < meta);
-  const top = [...cs].filter(c => !c.semSugestao).sort((a, c) => c.total - a.total).slice(0, 12);
+  const top = [...cs].filter(c => !c.zero && !c.semSugestao).sort((a, c) => c.total - a.total).slice(0, 12);
   return {
     kpis: [
       { rot: 'Drivers', val: fmt(rec.data.ficheiros.length), det: `meta ${meta}` },
-      { rot: 'Causas com menções', val: fmt(cs.length), det: 'em todos os drivers' },
+      { rot: 'Causas com menções', val: fmt(cs.filter(c => !c.zero).length), det: `de ${fmt(cs.length)} opções em todos os drivers` },
       { rot: 'Menções', val: fmt(cs.reduce((a, c) => a + c.total, 0)), det: 'uma pessoa pode escolher várias' },
       { rot: 'Causas abaixo da meta', val: fmt(abaixo.length), det: 'com 30 ou mais menções' },
     ],

@@ -20,20 +20,27 @@ export function resumoNps(contagens) {
 
 export const npsDe = (d, p, total) => (total ? Math.round(((p - d) / total) * 100) : 0);
 
+// Todas as linhas do Excel, incluindo as opções com 0 menções (vão para o fim)
+export const comZeros = (causas, semRespostas = [], extra = {}) =>
+  [...causas, ...semRespostas.map(nome => ({ nome, d: 0, n: 0, p: 0, total: 0, ...extra }))];
+
+// Ordem: sempre da causa com mais menções para a com menos; as de 0 menções no fim
 export function enriquecerCausas(causas) {
   const totalGeral = causas.reduce((a, c) => a + c.total, 0);
   return causas.map(c => {
-    const quota = (c.total / totalGeral) * 100;
+    const zero = c.total === 0;
+    const quota = totalGeral ? (c.total / totalGeral) * 100 : 0;
     return {
       ...c,
-      nps: npsDe(c.d, c.p, c.total),
-      pctD: (c.d / c.total) * 100, pctN: (c.n / c.total) * 100, pctP: (c.p / c.total) * 100,
+      zero,
+      nps: zero ? null : npsDe(c.d, c.p, c.total),
+      pctD: zero ? 0 : (c.d / c.total) * 100, pctN: zero ? 0 : (c.n / c.total) * 100, pctP: zero ? 0 : (c.p / c.total) * 100,
       quota,
-      impacto: quota >= 15 ? 'Alto' : quota >= 5 ? 'Médio' : 'Baixo',
-      amostraPequena: c.total < 30,
+      impacto: zero ? '–' : quota >= 15 ? 'Alto' : quota >= 5 ? 'Médio' : 'Baixo',
+      amostraPequena: !zero && c.total < 30,
       semSugestao: /sem sugest|^outr[oa]s?\b/i.test(c.nome),
     };
-  }).sort((a, b) => (a.semSugestao - b.semSugestao) || (b.total - a.total));
+  }).sort((a, b) => (b.total - a.total) || a.nome.localeCompare(b.nome, 'pt'));
 }
 
 export const fmt = (v, casas = 0) => Number(v).toLocaleString('pt-PT', { minimumFractionDigits: casas, maximumFractionDigits: casas });
@@ -43,12 +50,12 @@ export const sinal = v => (v > 0 ? `+${fmt(v)}` : fmt(v));
 export const LIMITES = { poucasRespostas: 100, amostraPequena: 30 };
 
 // Causas que contam para destaques e alertas: sem "Outra"/"Sem sugestões" e com menções suficientes
-export const causasFiaveis = cs => cs.filter(c => !c.semSugestao && !c.amostraPequena);
+export const causasFiaveis = cs => cs.filter(c => !c.zero && !c.semSugestao && !c.amostraPequena);
 
 // Destaques de uma lista de causas já enriquecida: pior NPS, mais detratores e mais referida
 export function destaques(cs) {
   const f = causasFiaveis(cs);
-  const lista = f.length ? f : cs.filter(c => !c.semSugestao);
+  const lista = f.length ? f : cs.filter(c => !c.zero && !c.semSugestao);
   if (!lista.length) return {};
   return {
     pior: [...lista].sort((a, b) => a.nps - b.nps)[0],
