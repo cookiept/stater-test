@@ -668,3 +668,4 @@ dialog .row { display: flex; gap: 8px; justify-content: flex-end; }
 .menu-exp > summary { cursor: pointer; user-select: none; }
 .menu-exp > summary:hover { box-shadow: inset 0 0 0 1px rgba(16, 24, 40, .14), 0 4px 12px -4px rgba(16, 24, 40, .18); }
 .menu-exp[open] > summary { background: var(--surface-mid); }
+.meta-pill, .meta-pill.up, .meta-pill.down { background: none; padding: 0; }
