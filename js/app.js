@@ -1,16 +1,16 @@
 // Stater · protótipo. Uma página, menu de marcas à esquerda, cada tab lê o seu Excel.
-import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1642';
-import { icon } from './icons.js?v=20261028-1642';
-import { logo } from './logos.js?v=20261028-1642';
-import { esc, info, def, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1642';
-import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData, identificar, TIPOS } from './excel.js?v=20261028-1642';
-import { resumoNps, fmt, sinal, LIMITES, enriquecerCausas, causasFiaveis, destaques } from './stats.js?v=20261028-1642';
-import { exportarGrafico, exportarTab, exportarOverview, imprimir } from './export.js?v=20261028-1642';
-import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1642';
-import * as vNps from './views/nps.js?v=20261028-1642';
-import * as vCausas from './views/causas.js?v=20261028-1642';
-import * as vMolho from './views/molho.js?v=20261028-1642';
-import { exemplos } from './exemplo.js?v=20261028-1642';
+import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1646';
+import { icon } from './icons.js?v=20261028-1646';
+import { logo } from './logos.js?v=20261028-1646';
+import { esc, info, def, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1646';
+import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData, identificar, TIPOS } from './excel.js?v=20261028-1646';
+import { resumoNps, fmt, sinal, LIMITES, enriquecerCausas, causasFiaveis, destaques } from './stats.js?v=20261028-1646';
+import { exportarGrafico, exportarTab, exportarOverview, imprimir } from './export.js?v=20261028-1646';
+import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1646';
+import * as vNps from './views/nps.js?v=20261028-1646';
+import * as vCausas from './views/causas.js?v=20261028-1646';
+import * as vMolho from './views/molho.js?v=20261028-1646';
+import { exemplos } from './exemplo.js?v=20261028-1646';
 
 // Tabs que funcionam no protótipo
 const ANALISES = {
@@ -210,7 +210,6 @@ function painel(brand, tab) {
     <div class="panel-body">
       <aside class="panel-side">
         ${resumoHtml(A.view.resumo(rec, m))}
-        ${filtrosHtml(rec)}
         ${A.view.lado ? A.view.lado(rec, m) : `<div class="side-block">
           <h3 class="sec-title">Ficheiro desta tab</h3>
           <div class="filecard">${icon('file')}<div><div class="fn">${esc(rec.fileName)}</div><div class="fm">Carregado a ${formatarData(rec.savedAt)} · ${esc(formatarPeriodo(rec.data.periodo))}</div></div></div>
