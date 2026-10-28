@@ -1,12 +1,12 @@
 // Tab "Todos ao molho" (Tabela única de causas): junta as causas raiz de todos os drivers numa só tabela.
 // Cada driver é um Excel "Relate" de Group NPS com a causa raiz desse driver; carregam-se vários de uma vez.
-import { enriquecerCausas, comZeros, fmt, sinal, destaques, causasFiaveis } from '../stats.js?v=20261028-1635';
-import { base, junta, desenhar } from '../charts.js?v=20261028-1635';
-import { info, esc, def, btnPptx, faixa } from '../ui.js?v=20261028-1635';
-import { icon } from '../icons.js?v=20261028-1635';
-import { formatarPeriodo } from '../excel.js?v=20261028-1635';
-import { npsGlobal, destaquesHtml, linhas, tabelaPptx } from './causas.js?v=20261028-1635';
-import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1635';
+import { enriquecerCausas, comZeros, fmt, sinal, destaques, causasFiaveis } from '../stats.js?v=20261028-1638';
+import { base, junta, desenhar } from '../charts.js?v=20261028-1638';
+import { info, esc, def, btnPptx, faixa } from '../ui.js?v=20261028-1638';
+import { icon } from '../icons.js?v=20261028-1638';
+import { formatarPeriodo } from '../excel.js?v=20261028-1638';
+import { npsGlobal, destaquesHtml, linhas, tabelaPptx } from './causas.js?v=20261028-1638';
+import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1638';
 
 export const multi = true;
 
@@ -159,7 +159,7 @@ export function mount(rec, brand, meta) {
     plotOptions: { bar: { horizontal: true, barHeight: '62%', borderRadius: 4, borderRadiusApplication: 'end', borderRadiusWhenStacked: 'last' } },
     stroke: { width: 1, colors: ['#fff'] },
     xaxis: { categories: top.map(c => [curto(c.nome), `${c.driver} · NPS ${fmt(c.nps)}`]), labels: { formatter: v => fmt(v) }, axisBorder: { show: false } },
-    yaxis: { labels: { maxWidth: 300, style: { fontSize: '12px', colors: ['#1a1a1a'] } } },
+    yaxis: { labels: { minWidth: 230, maxWidth: 230, offsetX: 4, style: { fontSize: '12px', colors: ['#1a1a1a'] } } },
     tooltip: { shared: true, intersect: false, y: { formatter: v => `${fmt(v)} menções` } },
     grid: { xaxis: { lines: { show: true } }, yaxis: { lines: { show: false } } },
   }));

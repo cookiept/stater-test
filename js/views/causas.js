@@ -1,9 +1,9 @@
 // Tab "NPS por Causa Raiz": Relate de Group NPS com a causa raiz (resposta múltipla).
-import { enriquecerCausas, comZeros, npsDe, fmt, sinal, destaques, causasFiaveis } from '../stats.js?v=20261028-1635';
-import { base, junta, desenhar } from '../charts.js?v=20261028-1635';
-import { info, esc, def, btnPptx, faixa } from '../ui.js?v=20261028-1635';
-import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1635';
-import { icon } from '../icons.js?v=20261028-1635';
+import { enriquecerCausas, comZeros, npsDe, fmt, sinal, destaques, causasFiaveis } from '../stats.js?v=20261028-1638';
+import { base, junta, desenhar } from '../charts.js?v=20261028-1638';
+import { info, esc, def, btnPptx, faixa } from '../ui.js?v=20261028-1638';
+import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1638';
+import { icon } from '../icons.js?v=20261028-1638';
 
 export const npsGlobal = data => {
   const a = data.amostraGrupo;
@@ -18,25 +18,36 @@ export function chips(rec) {
   return { respostas: g ? g.total : rec.data.causas.reduce((a, c) => a + c.total, 0) };
 }
 
-// Resumo: os três blocos do Stater v10 (volume, melhor NPS, maior detração).
-// Otimizado: "Outra" e "Sem sugestões" e causas com menos de 30 menções não entram no melhor e pior.
-export function resumo(rec) {
-  const cs = enriquecerCausas(rec.data.causas).filter(c => !c.semSugestao);
-  const mencoes = rec.data.causas.reduce((a, c) => a + c.total, 0);
-  const fiaveis = cs.filter(c => !c.amostraPequena);
-  const lista = fiaveis.length ? fiaveis : cs;
-  const maior = [...cs].sort((a, b) => b.total - a.total)[0];
-  const melhor = [...lista].sort((a, b) => b.nps - a.nps)[0];
-  const pior = [...lista].sort((a, b) => a.nps - b.nps)[0];
-  const blocos = [];
-  if (maior) blocos.push({ titulo: 'Amostra e volume', texto: `Análise de <strong>${fmt(mencoes)}</strong> ocorrências de causa raiz. O motivo mais frequente é <strong>${esc(maior.nome)}</strong> com <strong>${fmt(maior.total)}</strong> menções.` });
-  if (melhor) blocos.push({ titulo: 'Melhor desempenho NPS', tom: 'good', texto: `A causa com maior índice de satisfação relativa é <strong>${esc(melhor.nome)}</strong> com um NPS de <strong>${sinal(melhor.nps)}</strong> (${fmt(melhor.pctP)}% de promotores).` });
-  if (pior && pior !== melhor) blocos.push({ titulo: 'Maior ponto de detração', tom: 'bad', texto: `A causa raiz com maior impacto negativo é <strong>${esc(pior.nome)}</strong> com um NPS de <strong>${sinal(pior.nps)}</strong> (${fmt(pior.pctD)}% de detratores).` });
-  const pequenas = cs.filter(c => c.amostraPequena).length;
+// Resumo descritivo (exemplo para demonstrar; as regras finais vão ser escolhidas pelos colegas).
+// "Outra"/"Sem sugestões" e causas com menos de 30 menções não entram no melhor e pior.
+export function resumo(rec, meta) {
+  const cs = enriquecerCausas(rec.data.causas);
+  const mencoes = cs.reduce((a, c) => a + c.total, 0);
+  const g = npsGlobal(rec.data);
+  const dz = destaques(cs);
+  const fiaveis = causasFiaveis(cs);
+  const melhor = [...(fiaveis.length ? fiaveis : cs.filter(c => !c.semSugestao))].sort((a, b) => b.nps - a.nps)[0];
+  const abaixo = fiaveis.filter(c => c.nps < meta);
+  const maior = dz.maisReferida, pior = dz.pior;
+  const partes = [];
+  partes.push(`Com base em <strong>${fmt(mencoes)}</strong> menções${g ? ` de <strong>${fmt(g.total)}</strong> pessoas` : ''}${g ? `, o NPS de quem respondeu foi <strong>${fmt(g.nps)}</strong>, ${g.nps > meta ? 'acima' : g.nps === meta ? 'em linha com' : 'abaixo'} da meta (${meta})` : ''}.`);
+  if (maior) partes.push(`O motivo mais referido é <strong>${esc(maior.nome)}</strong>, com <strong>${fmt(maior.total)}</strong> menções (${fmt(maior.quota)}% do total) e NPS de <strong>${sinal(maior.nps)}</strong>.`);
+  if (melhor && pior && melhor !== pior) partes.push(`A causa mais bem avaliada é <strong>${esc(melhor.nome)}</strong> (NPS ${sinal(melhor.nps)}) e a que mais afasta clientes é <strong>${esc(pior.nome)}</strong> (NPS ${sinal(pior.nps)}, ${fmt(pior.pctD)}% de detratores).`);
+  partes.push(abaixo.length ? `${abaixo.length === 1 ? 'Uma causa está' : `<strong>${abaixo.length}</strong> causas estão`} abaixo da meta, por isso é aí que vale a pena atuar primeiro.` : 'Nenhuma causa com volume suficiente está abaixo da meta.');
   const notas = [];
+  const pequenas = cs.filter(c => c.amostraPequena && !c.semSugestao).length;
   if (pequenas) notas.push(`${pequenas === 1 ? 'Uma causa tem' : `${pequenas} causas têm`} menos de 30 menções e não entra${pequenas === 1 ? '' : 'm'} no melhor e pior.`);
   if (rec.data.semRespostas?.length) notas.push(`${rec.data.semRespostas.length === 1 ? 'Uma opção não teve' : `${rec.data.semRespostas.length} opções não tiveram`} menções neste período: aparece${rec.data.semRespostas.length === 1 ? '' : 'm'} no fim, com 0.`);
-  return { blocos, notas };
+  return {
+    tom: g && g.nps < meta ? 'bad' : 'good',
+    texto: partes.join(' '),
+    factos: [
+      ...(g ? [{ valor: sinal(g.nps - meta), rot: 'vs meta', tom: g.nps >= meta ? 'good' : 'bad', tip: 'Diferença entre o NPS de quem respondeu e a meta da marca.' }] : []),
+      ...(maior ? [{ valor: `${fmt(maior.quota)}%`, rot: 'peso da mais referida', tip: `Parte das menções que vai para ${maior.nome}.` }] : []),
+      { valor: fmt(abaixo.length), rot: 'abaixo da meta', tom: abaixo.length ? 'bad' : 'good', tip: 'Causas com 30 ou mais menções e NPS abaixo da meta da marca.' },
+    ],
+    notas,
+  };
 }
 
 export function html(rec, meta) {
@@ -141,8 +152,8 @@ export function mount(rec, brand, meta) {
     plotOptions: { bar: { horizontal: true, barHeight: '62%', borderRadius: 4, borderRadiusApplication: 'around', borderRadiusWhenStacked: 'all' } },
     stroke: { width: 2, colors: ['#fff'] },
     dataLabels: { enabled: true, formatter: (v) => (v >= 8 ? `${fmt(v)}%` : ''), style: { fontSize: '11px', fontWeight: 600, colors: ['#fff', '#1a1a1a', brand.colors.on] }, dropShadow: { enabled: false } },
-    xaxis: { categories: cs.map(c => [c.nome.length > 28 ? c.nome.slice(0, 27) + '…' : c.nome, c.zero ? '0 menções' : `${fmt(c.total)} menções · NPS ${fmt(c.nps)}`]), labels: { formatter: v => `${v}%` }, axisBorder: { show: false } },
-    yaxis: { labels: { maxWidth: 300, style: { fontSize: '12px', colors: ['#1a1a1a'] } } },
+    xaxis: { categories: cs.map(c => [c.nome.length > 30 ? c.nome.slice(0, 29) + '…' : c.nome, c.zero ? '0 menções' : `${fmt(c.total)} menções · NPS ${fmt(c.nps)}`]), labels: { formatter: v => `${v}%` }, axisBorder: { show: false } },
+    yaxis: { labels: { minWidth: 230, maxWidth: 230, offsetX: 4, style: { fontSize: '12px', colors: ['#1a1a1a'] } } },
     tooltip: { shared: true, intersect: false, y: { formatter: (v, { seriesIndex, dataPointIndex }) => `${fmt(v)} (${fmt([cs[dataPointIndex].pctD, cs[dataPointIndex].pctN, cs[dataPointIndex].pctP][seriesIndex], 1)}%)` } },
     grid: { xaxis: { lines: { show: true } }, yaxis: { lines: { show: false } } },
   }));
@@ -226,7 +237,7 @@ export function exportar(rec, brand, meta) {
       { rot: 'Menções', val: fmt(cs.reduce((a, c) => a + c.total, 0)), det: 'uma pessoa pode escolher várias' },
       { rot: 'Abaixo da meta', val: fmt(abaixo.length), det: abaixo.map(c => c.nome).join(', ') || 'nenhuma causa' },
     ],
-    resumo: resumo(rec).blocos.map(x => `${x.titulo}: ${textoDe(x.texto)}`),
+    resumo: [textoDe(resumo(rec, meta).texto)],
     filtros: rec.data.filtros,
     graficos: [
       { id: 'comp', titulo: 'Quem escolheu cada causa', desenhar: graficoComposicao(b, brand, cs) },
