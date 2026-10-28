@@ -1,9 +1,9 @@
 // Tab "NPS": distribuição das notas 0–10 (Stats iQ Describe).
-import { resumoNps, fmt, sinal, LIMITES } from '../stats.js?v=20261028-1538';
-import { base, junta, desenhar } from '../charts.js?v=20261028-1538';
-import { info, esc, def, GLOSSARIO, btnPptx, faixa } from '../ui.js?v=20261028-1538';
-import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1538';
-import { icon } from '../icons.js?v=20261028-1538';
+import { resumoNps, fmt, sinal, LIMITES } from '../stats.js?v=20261028-1539';
+import { base, junta, desenhar } from '../charts.js?v=20261028-1539';
+import { info, esc, def, GLOSSARIO, btnPptx, faixa } from '../ui.js?v=20261028-1539';
+import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1539';
+import { icon } from '../icons.js?v=20261028-1539';
 
 export function chips(rec) {
   return { respostas: resumoNps(rec.data.contagens).total };

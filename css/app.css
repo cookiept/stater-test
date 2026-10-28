@@ -656,3 +656,4 @@ dialog .row { display: flex; gap: 8px; justify-content: flex-end; }
   .chart { min-height: 0 !important; height: auto !important; }
 }
 .grid-2 > .card:first-child .card-head { flex-wrap: nowrap; } .card-head .exp { flex-shrink: 0; }
+.grid-2 > .card:first-child .card-head h3 { white-space: nowrap; }
