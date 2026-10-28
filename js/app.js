@@ -1,14 +1,14 @@
 // Stater · protótipo. Uma página, menu de marcas à esquerda, cada tab lê o seu Excel.
-import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1328';
-import { icon } from './icons.js?v=20261028-1328';
-import { logo } from './logos.js?v=20261028-1328';
-import { esc, info, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1328';
-import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261028-1328';
-import { resumoNps, fmt, sinal } from './stats.js?v=20261028-1328';
-import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1328';
-import * as vNps from './views/nps.js?v=20261028-1328';
-import * as vCausas from './views/causas.js?v=20261028-1328';
-import { exemplos } from './exemplo.js?v=20261028-1328';
+import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1347';
+import { icon } from './icons.js?v=20261028-1347';
+import { logo } from './logos.js?v=20261028-1347';
+import { esc, info, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1347';
+import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261028-1347';
+import { resumoNps, fmt, sinal } from './stats.js?v=20261028-1347';
+import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1347';
+import * as vNps from './views/nps.js?v=20261028-1347';
+import * as vCausas from './views/causas.js?v=20261028-1347';
+import { exemplos } from './exemplo.js?v=20261028-1347';
 
 // Tabs que funcionam no protótipo
 const ANALISES = {
