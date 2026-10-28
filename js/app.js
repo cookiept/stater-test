@@ -1,16 +1,16 @@
 // Stater · protótipo. Uma página, menu de marcas à esquerda, cada tab lê o seu Excel.
-import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1651';
-import { icon } from './icons.js?v=20261028-1651';
-import { logo } from './logos.js?v=20261028-1651';
-import { esc, info, def, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1651';
-import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData, identificar, TIPOS } from './excel.js?v=20261028-1651';
-import { resumoNps, fmt, sinal, LIMITES, enriquecerCausas, causasFiaveis, destaques } from './stats.js?v=20261028-1651';
-import { exportarGrafico, exportarTab, exportarOverview, imprimir } from './export.js?v=20261028-1651';
-import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1651';
-import * as vNps from './views/nps.js?v=20261028-1651';
-import * as vCausas from './views/causas.js?v=20261028-1651';
-import * as vMolho from './views/molho.js?v=20261028-1651';
-import { exemplos } from './exemplo.js?v=20261028-1651';
+import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1657';
+import { icon } from './icons.js?v=20261028-1657';
+import { logo } from './logos.js?v=20261028-1657';
+import { esc, info, def, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1657';
+import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData, identificar, TIPOS } from './excel.js?v=20261028-1657';
+import { resumoNps, fmt, sinal, LIMITES, enriquecerCausas, causasFiaveis, destaques } from './stats.js?v=20261028-1657';
+import { exportarGrafico, exportarTab, exportarOverview, imprimir } from './export.js?v=20261028-1657';
+import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1657';
+import * as vNps from './views/nps.js?v=20261028-1657';
+import * as vCausas from './views/causas.js?v=20261028-1657';
+import * as vMolho from './views/molho.js?v=20261028-1657';
+import { exemplos } from './exemplo.js?v=20261028-1657';
 
 // Tabs que funcionam no protótipo
 const ANALISES = {
@@ -294,12 +294,6 @@ function overview() {
       <img class="ov-logo" src="assets/grupo-brisa-branco.png" alt="Grupo Brisa" width="640" height="498">
       <span class="ov-faixa" aria-hidden="true"></span>
     </section>
-    <div class="kpis ov-kpis" style="grid-template-columns:repeat(4,minmax(0,1fr))">
-      ${kpi('Marcas na meta', comDados.length ? `${acima} de ${comDados.length}` : '–', comDados.length ? 'com NPS igual ou acima da meta' : 'ainda sem dados', def('meta'), true)}
-      ${kpi('Respostas', totalResp ? fmt(totalResp) : '–', `NPS de ${comDados.length} de ${BRANDS.length} marcas`, def('respostas'))}
-      ${kpi('Alertas', fmt(alertas.length), alertas.length ? `${porTipo('Marca')} marca · ${porTipo('Driver')} driver · ${porTipo('Causa raiz')} causa raiz` : 'nada abaixo da meta', info('Alertas', 'Marcas, drivers e causas raiz com NPS abaixo da meta da marca. Causas com menos de 30 menções não contam.'))}
-      ${kpi('Tabs com dados', `${tabsCom} de ${tabsVivas}`, 'tabs que já funcionam no protótipo', info('Tabs com dados', 'Quantas das tabs que funcionam neste protótipo já têm um Excel carregado neste browser.'))}
-    </div>
     <div class="ov-bar">
       <h2>Marcas</h2>
       <span class="muted">${comDados.length} de ${BRANDS.length} com dados${totalResp ? ` · ${fmt(totalResp)} respostas` : ''}</span>
@@ -325,7 +319,7 @@ function overview() {
           ${rec.exemplo ? '<div class="muted">Dados de exemplo</div>' : ''}`
         : `<div class="wait">${vivas ? 'A aguardar dados da tab NPS' : 'NPS ainda sem acesso'}</div>`}
         <div class="meta">${icon('target')} Meta <b>${m}</b>
-          ${ativa(b, b.tabs[0]) ? `<a class="btn btn-ghost btn-sm" href="#/${b.id}/nps" style="margin-left:auto">Abrir ${icon('chevron')}</a>` : ''}</div>
+</div>
       </div>`).join('')}
     </div>
     <section class="card" style="background:#fff" aria-labelledby="h-ov">
