@@ -1,9 +1,9 @@
 // Tab "NPS por Causa Raiz": Relate de Group NPS com a causa raiz (resposta múltipla).
-import { enriquecerCausas, npsDe, fmt, sinal, destaques, causasFiaveis } from '../stats.js?v=20261028-1414';
-import { base, junta, desenhar } from '../charts.js?v=20261028-1414';
-import { info, esc, def, btnPptx, faixa } from '../ui.js?v=20261028-1414';
-import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1414';
-import { icon } from '../icons.js?v=20261028-1414';
+import { enriquecerCausas, npsDe, fmt, sinal, destaques, causasFiaveis } from '../stats.js?v=20261028-1538';
+import { base, junta, desenhar } from '../charts.js?v=20261028-1538';
+import { info, esc, def, btnPptx, faixa } from '../ui.js?v=20261028-1538';
+import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1538';
+import { icon } from '../icons.js?v=20261028-1538';
 
 export const npsGlobal = data => {
   const a = data.amostraGrupo;
@@ -101,8 +101,8 @@ export function destaquesHtml(dz, comDriver = false) {
 
 export function linhas(cs, meta, pior, extra = () => '') {
   return cs.map(c => `
-    <tr class="${c === pior ? 'is-pior' : ''}${c.amostraPequena ? ' is-pequena' : ''}">
-      <td><span class="name">${esc(c.nome)}</span>${c === pior ? ' <span class="badge bad">pior NPS</span>' : ''}${c.amostraPequena ? ` <span class="badge mid">poucas menções ${def('amostra')}</span>` : ''}</td>${extra(c)}
+    <tr class="${c.amostraPequena ? 'is-pequena' : ''}">
+      <td><span class="name">${esc(c.nome)}</span>${c.amostraPequena ? ` <span class="badge mid">poucas menções ${def('amostra')}</span>` : ''}</td>${extra(c)}
       <td class="r"><span class="badge ${c.nps < meta ? 'bad' : 'good'} num" title="${c.nps < meta ? 'Abaixo da meta' : 'Na meta ou acima'}">${fmt(c.nps)}</span></td>
       <td class="r num">${fmt(c.total)}</td>
       <td><div style="display:flex;align-items:center;gap:10px"><div class="minibar" aria-hidden="true"><div class="d" style="flex:${c.pctD}"></div><div class="n" style="flex:${c.pctN}"></div><div class="p" style="flex:${c.pctP}"></div></div><span class="muted num" style="white-space:nowrap">${fmt(c.pctD)} · ${fmt(c.pctN)} · ${fmt(c.pctP)}%</span></div></td>

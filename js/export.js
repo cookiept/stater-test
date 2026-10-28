@@ -99,27 +99,26 @@ function juntarTab(p, b, tab, e, sub) {
 export async function exportarTab(b, tab, e, sub) {
   const P = await biblioteca();
   const p = novo(P, b);
+  capaRelatorio(p, b, `${b.name} · ${tab.name}`, sub);
   juntarTab(p, b, tab, e, sub);
   await p.writeFile({ fileName: nomeFicheiro([b.name, tab.name]) });
 }
 
-// Marca inteira: capa e, a seguir, cada tab com dados
-export async function exportarMarca(b, itens) {
-  const P = await biblioteca();
-  const p = novo(P, b);
+// Capa: fundo escuro da marca, título, subtítulo e data
+function capaRelatorio(p, b, titulo, sub) {
   const s = p.addSlide();
   s.background = { color: hex(b.colors.darkest) };
-  s.addText(b.name, { x: 0.8, y: 2.6, w: 11.7, h: 1, fontSize: 44, bold: true, color: 'FFFFFF', fontFace: fonte(b), margin: 0 });
-  s.addText(`Resultados Stats iQ · ${itens.map(i => i.tab.name).join(', ')}`, { x: 0.8, y: 3.6, w: 11.7, h: 0.5, fontSize: 16, color: 'D0D7DC', fontFace: fonte(b), margin: 0 });
-  s.addText(`Gerado no Stater a ${new Date().toLocaleDateString('pt-PT')}`, { x: 0.8, y: 6.6, w: 11.7, h: 0.4, fontSize: 11, color: 'D0D7DC', fontFace: fonte(b), margin: 0 });
-  for (const i of itens) juntarTab(p, b, i.tab, i.e, i.sub);
-  await p.writeFile({ fileName: nomeFicheiro([b.name]) });
+  s.addShape(p.ShapeType.rect, { x: 0, y: 7.2, w: 13.33, h: 0.3, fill: { color: hex(b.colors.main) }, line: { color: hex(b.colors.main), width: 0 } });
+  s.addText(titulo, { x: 0.8, y: 2.5, w: 11.7, h: 1.1, fontSize: 44, bold: true, color: 'FFFFFF', fontFace: fonte(b), margin: 0 });
+  if (sub) s.addText(sub, { x: 0.8, y: 3.6, w: 11.7, h: 0.5, fontSize: 18, color: 'D0D7DC', fontFace: fonte(b), margin: 0 });
+  s.addText(`Stater · Grupo Brisa · ${new Date().toLocaleDateString('pt-PT')}`, { x: 0.8, y: 6.5, w: 11.7, h: 0.4, fontSize: 11, color: 'D0D7DC', fontFace: fonte(b), margin: 0 });
 }
 
 // Overview: um slide com o gráfico NPS vs meta e a lista de alertas
 export async function exportarOverview(grupo, dados, alertas) {
   const P = await biblioteca();
   const p = novo(P, grupo);
+  capaRelatorio(p, grupo, 'Overview do Grupo Brisa', 'NPS de cada marca face à meta');
   const s = slide(p, grupo, 'NPS vs meta por marca', `Overview do Grupo Brisa · ${new Date().toLocaleDateString('pt-PT')}`);
   const com = dados.filter(d => d.r);
   s.addChart(p.ChartType.bar, [

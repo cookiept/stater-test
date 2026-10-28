@@ -1,5 +1,5 @@
 // Pequenas peças de interface partilhadas.
-import { icon } from './icons.js?v=20261028-1414';
+import { icon } from './icons.js?v=20261028-1538';
 
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -87,7 +87,7 @@ export function onda(seed = 1) {
 }
 
 // Botão para levar um gráfico para PowerPoint (editável)
-export const btnPptx = id => `<button type="button" class="btn btn-ghost btn-xs exp" data-exp="${id}" title="Levar este gráfico para PowerPoint, como gráfico editável">${icon('slides')}<span class="exp-t">PowerPoint</span></button>`;
+export const btnPptx = id => `<button type="button" class="btn btn-ghost btn-xs exp" data-exp="${id}" title="Descarregar este gráfico em PowerPoint, editável">${icon('download')}<span class="exp-t">Download</span></button>`;
 
 // Faixa de alerta dentro de uma tab (abaixo da meta, poucas respostas)
 export const faixa = (tom, titulo, texto) => `<div class="faixa ${tom}" role="status">${icon(tom === 'bad' ? 'alert' : 'info')}<div><b>${titulo}</b> ${texto}</div></div>`;

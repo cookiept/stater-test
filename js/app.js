@@ -1,16 +1,16 @@
 // Stater · protótipo. Uma página, menu de marcas à esquerda, cada tab lê o seu Excel.
-import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1414';
-import { icon } from './icons.js?v=20261028-1414';
-import { logo } from './logos.js?v=20261028-1414';
-import { esc, info, def, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1414';
-import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData, identificar, TIPOS } from './excel.js?v=20261028-1414';
-import { resumoNps, fmt, sinal, LIMITES, enriquecerCausas, causasFiaveis, destaques } from './stats.js?v=20261028-1414';
-import { exportarGrafico, exportarTab, exportarMarca, exportarOverview, imprimir } from './export.js?v=20261028-1414';
-import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1414';
-import * as vNps from './views/nps.js?v=20261028-1414';
-import * as vCausas from './views/causas.js?v=20261028-1414';
-import * as vMolho from './views/molho.js?v=20261028-1414';
-import { exemplos } from './exemplo.js?v=20261028-1414';
+import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1538';
+import { icon } from './icons.js?v=20261028-1538';
+import { logo } from './logos.js?v=20261028-1538';
+import { esc, info, def, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1538';
+import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData, identificar, TIPOS } from './excel.js?v=20261028-1538';
+import { resumoNps, fmt, sinal, LIMITES, enriquecerCausas, causasFiaveis, destaques } from './stats.js?v=20261028-1538';
+import { exportarGrafico, exportarTab, exportarOverview, imprimir } from './export.js?v=20261028-1538';
+import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1538';
+import * as vNps from './views/nps.js?v=20261028-1538';
+import * as vCausas from './views/causas.js?v=20261028-1538';
+import * as vMolho from './views/molho.js?v=20261028-1538';
+import { exemplos } from './exemplo.js?v=20261028-1538';
 
 // Tabs que funcionam no protótipo
 const ANALISES = {
@@ -162,14 +162,13 @@ function filtrosHtml(rec) {
   </div>`;
 }
 
-// Menu "Exportar": esta tab em PowerPoint ou PDF, ou a marca inteira em PowerPoint
-function menuExportar(overview = false) {
+// Menu "Exportar": PDF ou PowerPoint (com capa)
+function menuExportar() {
   return `<details class="menu-exp">
     <summary class="btn btn-secondary btn-sm">${icon('download')} Exportar</summary>
     <div class="menu-lista" role="menu">
-      <button type="button" role="menuitem" data-act="exp-tab">${icon('slides')}<span><b>${overview ? 'Overview' : 'Esta tab'} em PowerPoint</b><small>Gráficos editáveis</small></span></button>
-      <button type="button" role="menuitem" data-act="exp-pdf">${icon('print')}<span><b>${overview ? 'Overview' : 'Esta tab'} em PDF</b><small>Abre a janela de impressão: escolhe "Guardar como PDF"</small></span></button>
-      ${overview ? '' : `<button type="button" role="menuitem" data-act="exp-marca">${icon('layers')}<span><b>Marca inteira em PowerPoint</b><small>Todas as tabs desta marca com dados</small></span></button>`}
+      <button type="button" role="menuitem" data-act="exp-pdf" title="Abre a janela de impressão: escolhe Guardar como PDF">${icon('print')}<b>PDF</b></button>
+      <button type="button" role="menuitem" data-act="exp-tab" title="Com capa e gráficos editáveis">${icon('slides')}<b>PowerPoint</b></button>
     </div>
   </details>`;
 }
@@ -310,7 +309,7 @@ function overview() {
       <span class="sep"></span>
       ${dataMetas() ? `<span class="muted">Metas atualizadas a ${formatarData(dataMetas())}</span>` : ''}
       <button class="btn btn-secondary btn-sm" data-act="metas">${icon('target')} Editar metas</button>
-      ${menuExportar(true)}
+      ${menuExportar()}
     </div>
     <div class="ov-grid">${dados.map(({ b, rec, r, m, pior, comDados: n, vivas, alertas: al }) => `
       <div class="ov-card" style="${tileVars(b)};--font-b:${b.font}, 'Noto Sans', sans-serif">
@@ -410,12 +409,6 @@ async function exportar(oque, id) {
     toast('A preparar o PowerPoint…');
     if (!r.brand) {
       await exportarOverview(GROUP, dadosOverview(), todosAlertas());
-    } else if (oque === 'marca') {
-      const itens = r.brand.tabs.filter(t => ativa(r.brand, t) && store.get(r.brand.id, t.id)).map(t => {
-        const rec = store.get(r.brand.id, t.id);
-        return { tab: t, e: ANALISES[t.id].view.exportar(rec, r.brand, meta(r.brand.id)), sub: formatarPeriodo(rec.data.periodo) };
-      });
-      await exportarMarca(r.brand, itens);
     } else {
       const rec = store.get(r.brand.id, r.tab.id);
       const e = ANALISES[r.tab.id].view.exportar(rec, r.brand, meta(r.brand.id));
@@ -519,7 +512,6 @@ document.addEventListener('click', async e => {
   if (!b || b.disabled) return;
   const r = rota();
   if (b.dataset.act === 'exp-tab') exportar('tab');
-  if (b.dataset.act === 'exp-marca') exportar('marca');
   if (b.dataset.act === 'exp-pdf') imprimir();
   if (b.dataset.act === 'rm-ficheiro' && r.brand) {
     const rec = store.get(r.brand.id, r.tab.id);

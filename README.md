@@ -10,7 +10,7 @@ Protótipo do novo Stater: os resultados do Qualtrics Stats iQ das marcas do Gru
 - Filtros da extração lidos do topo do Excel, avisos de ficheiro errado com o que falta e a tab certa, explicações "i", destaques e avisos de poucas respostas.
 - Alertas abaixo da meta por marca, driver e causa raiz (Overview, menu e tabs). Drivers e causas usam a meta da marca.
 - **Overview**: marcas na meta, respostas, alertas e um cartão por marca.
-- Exportar: um gráfico, uma tab ou a marca inteira para PowerPoint (gráficos editáveis), ou a tab em PDF pela impressão do browser.
+- Exportar: cada gráfico tem "Download" (PowerPoint editável); o menu Exportar tem PDF e PowerPoint (com capa).
 - As outras tabs aparecem como "Disponível na versão final".
 
 ## Dados
