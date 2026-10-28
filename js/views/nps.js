@@ -1,8 +1,8 @@
 // Tab "NPS": distribuição das notas 0–10 (Stats iQ Describe).
-import { resumoNps, fmt, sinal } from '../stats.js?v=20261028-1328';
-import { base, junta, desenhar } from '../charts.js?v=20261028-1328';
-import { info, esc } from '../ui.js?v=20261028-1328';
-import { icon } from '../icons.js?v=20261028-1328';
+import { resumoNps, fmt, sinal } from '../stats.js?v=20261028-1341';
+import { base, junta, desenhar } from '../charts.js?v=20261028-1341';
+import { info, esc } from '../ui.js?v=20261028-1341';
+import { icon } from '../icons.js?v=20261028-1341';
 
 export function chips(rec) {
   return { respostas: resumoNps(rec.data.contagens).total };
@@ -41,19 +41,28 @@ export function resumo(rec, meta) {
 
 export function html(rec, meta) {
   const r = resumoNps(rec.data.contagens);
-  const kpi = (rot, val, det, tip, hero = false) => `
+  const c = rec.data.contagens;
+  const kpi = (rot, val, det, tip, hero = false, viz = '') => `
     <div class="kpi${hero ? ' hero' : ''}">
-      <span class="kl">${rot} ${tip ? info(rot, tip) : ''}</span>
+      <span class="kl">${rot}</span>${tip ? `<span class="k-i">${info(rot, tip)}</span>` : ''}
       <span class="kv num">${val}</span><span class="kd">${det}</span>
+      ${viz ? `<div class="kviz" aria-hidden="true">${viz}</div>` : ''}
     </div>`;
+  // Mini-gráficos por baixo de cada número
+  const pos = v => Math.max(0, Math.min(100, v));
+  const escala = (v, min, max, marca) => `<div class="kv-escala"><i style="left:${pos(((v - min) / (max - min)) * 100)}%"></i>${marca != null ? `<b style="left:${pos(((marca - min) / (max - min)) * 100)}%"></b>` : ''}</div>`;
+  const barra = (pct, cor) => `<div class="kv-barra"><span style="width:${pos(pct)}%;background:${cor}"></span></div>`;
+  const maxC = Math.max(...c);
+  const colunas = `<div class="kv-colunas">${c.map((v, i) => `<span style="height:${Math.max(6, (v / maxC) * 100)}%;background:${i <= 6 ? 'var(--detractor)' : i <= 8 ? 'var(--passive)' : 'var(--brand)'}"></span>`).join('')}</div>`;
+  const dif = r.nps - meta;
   return `
     <div class="kpis">
-      ${kpi('NPS', fmt(r.nps), `Meta ${meta}`, 'Net Promoter Score: % de promotores (9–10) menos % de detratores (0–6). Vai de −100 a +100. Calculado a partir das contagens do Excel.', true)}
-      ${kpi('Respostas', fmt(r.total), 'notas de 0 a 10', 'Total de respostas com nota no período do ficheiro.')}
-      ${kpi('Promotores', `${fmt(r.pctP, 1)}%`, `${fmt(r.p)} pessoas`, 'Quem deu 9 ou 10.')}
-      ${kpi('Neutros', `${fmt(r.pctN, 1)}%`, `${fmt(r.n)} pessoas`, 'Quem deu 7 ou 8. Não entram na conta do NPS, mas estão perto de passar a promotores.')}
-      ${kpi('Detratores', `${fmt(r.pctD, 1)}%`, `${fmt(r.d)} pessoas`, 'Quem deu de 0 a 6.')}
-      ${kpi('Média', fmt(r.media, 2), `Desvio padrão ${fmt(r.dp, 2)}`, 'Média das notas de 0 a 10. O desvio padrão mostra quão espalhadas estão as notas: quanto maior, mais opiniões divergentes.')}
+      ${kpi('NPS', fmt(r.nps), `<span class="delta ${dif >= 0 ? 'up' : 'down'}">${dif >= 0 ? '▲' : '▼'} ${sinal(dif)}</span> vs meta ${meta}`, 'Net Promoter Score: % de promotores (9–10) menos % de detratores (0–6). Vai de −100 a +100. A marca preta é a meta.', true, escala(r.nps, -100, 100, meta))}
+      ${kpi('Respostas', fmt(r.total), 'notas de 0 a 10', 'Total de respostas com nota no período do ficheiro. As colunas mostram quantas pessoas deram cada nota, de 0 a 10.', false, colunas)}
+      ${kpi('Promotores', `${fmt(r.pctP, 1)}%`, `${fmt(r.p)} pessoas`, 'Quem deu 9 ou 10.', false, barra(r.pctP, 'var(--brand)'))}
+      ${kpi('Neutros', `${fmt(r.pctN, 1)}%`, `${fmt(r.n)} pessoas`, 'Quem deu 7 ou 8. Não entram na conta do NPS, mas estão perto de passar a promotores.', false, barra(r.pctN, 'var(--passive)'))}
+      ${kpi('Detratores', `${fmt(r.pctD, 1)}%`, `${fmt(r.d)} pessoas`, 'Quem deu de 0 a 6.', false, barra(r.pctD, 'var(--detractor)'))}
+      ${kpi('Média', fmt(r.media, 2), `Desvio padrão ${fmt(r.dp, 2)}`, 'Média das notas de 0 a 10. O desvio padrão mostra quão espalhadas estão as notas: quanto maior, mais opiniões divergentes.', false, escala(r.media, 0, 10))}
     </div>
     <div class="grid-2">
       <section class="card" aria-labelledby="h-gauge">

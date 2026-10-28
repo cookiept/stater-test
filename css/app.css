@@ -424,96 +424,91 @@ dialog .row { display: flex; gap: 8px; justify-content: flex-end; }
 @media (max-width: 600px) { .marca-agua { font-size: 26px; } }
 
 /* =====================================================================
-   Componentes v2 (2026-10-28), inspirados na referência "Fey" do Gonçalo.
-   Mantém cores, tipografia e organização do DS do Grupo Brisa; muda só a forma dos componentes:
-   superfícies sem contorno com halo suave, números grandes com tracking apertado,
-   rótulos pequenos em maiúsculas, cor só onde há significado (meta, deltas, marca).
-   Versão anterior: commit 3c94b32.
+   Componentes v3 (2026-10-28, teste), inspirados nas imagens do Dribbble que o Gonçalo enviou
+   ("Sypher" / "Conceptzilla"). Mantém cores, tipografia e organização do DS do Grupo Brisa.
+   Estilo plano: fundo branco, linhas finas em vez de sombras, rótulos pequenos em maiúsculas,
+   números com mini-gráficos por baixo, barras de progresso finas, cabeçalhos de tabela claros.
+   Versões anteriores: v2 = da834df, v1 = 3c94b32.
    ===================================================================== */
-:root {
-  --halo: 0 0 0 1px rgba(16, 24, 40, .05), 0 1px 2px rgba(16, 24, 40, .04), 0 12px 32px -14px rgba(16, 24, 40, .16);
-  --halo-hover: 0 0 0 1px rgba(16, 24, 40, .07), 0 2px 4px rgba(16, 24, 40, .05), 0 22px 44px -16px rgba(16, 24, 40, .24);
-  --hair: rgba(16, 24, 40, .07);
-  --label: 600 10.5px/14px var(--font-ui);
-}
-.num, .kv, .val b, .rs-f b { font-feature-settings: "tnum" 1, "ss01" 1; }
+:root { --hair: #ececec; --hair-2: #f3f3f3; --label: 600 10.5px/14px var(--font-ui); }
+.num, .kv, .val b, .rs-f b { font-feature-settings: "tnum" 1; }
 
-/* Rótulos: pequenos, maiúsculas, cinzento */
-.kpi .kl, .rs-bloco .rs-t, .sec-title, .ov-bar h2, .card-head h3 { letter-spacing: .02em; }
-.kpi .kl { font: var(--label); text-transform: uppercase; letter-spacing: .08em; }
-
-/* Painel e cartões: sem contorno, halo suave */
-.panel { border: 0; box-shadow: var(--halo); border-radius: 20px; }
+/* Superfícies planas com linhas finas */
+.panel { border: 1px solid var(--hair); box-shadow: none; border-radius: 16px; }
 .panel-head { border-bottom: 1px solid var(--hair); }
-.panel-head h2 { font-size: 30px; line-height: 34px; letter-spacing: -.045em; }
-.panel-side { border-right: 1px solid var(--hair); background: linear-gradient(180deg, #fcfcfb, #fff 40%); }
-.card { border: 0; box-shadow: var(--halo); background: #fff; padding: 18px 18px 10px; }
-.card-head h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .07em; color: var(--text-secondary); }
-.card.ficticio { box-shadow: var(--halo), inset 0 0 0 1.5px #f1c75a; border: 0; }
+.panel-side { border-right: 1px solid var(--hair); }
+.card { border: 1px solid var(--hair); box-shadow: none; border-radius: 12px; padding: 16px 18px 10px; }
+.card-head h3 { font-size: 15px; letter-spacing: -.01em; color: var(--text-primary); }
+.card.ficticio { border: 1.5px dashed #e0a400; }
 
-/* Linha de KPI tipo "ticker": uma faixa com divisórias finas; o NPS é o cartão escuro */
-.kpis { gap: 0; background: #fff; border-radius: 18px; box-shadow: var(--halo); overflow: hidden; }
-.kpi { border: 0; border-radius: 0; padding: 16px 18px; gap: 4px; position: relative; }
-.kpi + .kpi::before { content: ""; position: absolute; left: 0; top: 18px; bottom: 18px; width: 1px; background: var(--hair); }
-.kpi .kv { font-size: 30px; line-height: 34px; font-weight: 700; letter-spacing: -.05em; }
-.kpi .kd { font-size: 11.5px; }
-.kpi.hero { background: radial-gradient(120% 120% at 100% 0%, color-mix(in srgb, var(--brand) 55%, #0b0b0b) 0%, #101314 70%); color: #fff; border: 0; }
-.kpi.hero .kv { font-size: 40px; line-height: 40px; text-shadow: 0 0 24px color-mix(in srgb, var(--brand-light) 45%, transparent); }
-.kpi.hero .kl, .kpi.hero .kd { color: rgba(255, 255, 255, .62); }
-@media (max-width: 1280px) { .kpi:nth-child(4)::before { display: none; } .kpi:nth-child(n+4) { border-top: 1px solid var(--hair); } }
-@media (max-width: 600px) { .kpi::before { display: none; } .kpi:nth-child(n+3) { border-top: 1px solid var(--hair); } }
+/* Faixa de números: células separadas por linhas, rótulo em maiúsculas, mini-gráfico por baixo */
+.kpis { gap: 0; border: 1px solid var(--hair); border-radius: 12px; background: #fff; overflow: hidden; }
+.kpi { border: 0; border-radius: 0; padding: 14px 16px 14px; gap: 3px; position: relative; display: flex; flex-direction: column; }
+.kpi + .kpi { border-left: 1px solid var(--hair); }
+.kpi .kl { font: 600 10px/14px var(--font-ui); text-transform: uppercase; letter-spacing: .04em; color: var(--text-tertiary); padding-right: 18px; }
+.k-i { position: absolute; top: 10px; right: 10px; line-height: 0; }
+.kpi .kv { font-size: 22px; line-height: 28px; font-weight: 600; letter-spacing: -.02em; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.kpi .kd { font-size: 11px; color: var(--text-tertiary); }
+.kpi.hero { background: #fff; color: var(--text-primary); }
+.kpi.hero .kl, .kpi.hero .kd, .kpi.hero .info { color: var(--text-tertiary); }
+.kpi.hero .kv { font-size: 22px; }
+.delta { font-size: 11.5px; font-weight: 600; letter-spacing: 0; }
+.delta.up { color: #12823b; }
+.delta.down { color: var(--detractor-ink); }
+.kviz { margin-top: auto; padding-top: 10px; height: 32px; display: flex; align-items: flex-end; }
+.kv-colunas { display: flex; align-items: flex-end; gap: 2px; height: 22px; width: 100%; }
+.kv-colunas span { flex: 1; border-radius: 1.5px; min-height: 2px; }
+.kv-barra { width: 100%; height: 6px; border-radius: 99px; background: var(--hair-2); overflow: hidden; margin-bottom: 4px; }
+.kv-barra span { display: block; height: 100%; border-radius: 99px; }
+.kv-escala { position: relative; width: 100%; height: 6px; border-radius: 99px; margin-bottom: 4px;
+  background: linear-gradient(90deg, var(--detractor) 0%, #f3b53f 50%, #2fae5c 100%); }
+.kv-escala i { position: absolute; top: -9px; width: 0; height: 0; translate: -5px 0; border: 5px solid transparent; border-top: 6px solid var(--text-primary); }
+.kv-escala b { position: absolute; top: -3px; width: 2px; height: 12px; translate: -1px 0; background: var(--text-primary); border-radius: 1px; opacity: .55; }
+@media (max-width: 1280px) { .kpi:nth-child(4) { border-left: 0; } .kpi:nth-child(n+4) { border-top: 1px solid var(--hair); } }
+@media (max-width: 600px) { .kpi:nth-child(odd) { border-left: 0; } .kpi:nth-child(n+3) { border-top: 1px solid var(--hair); } }
 
-/* Chips: contorno fino em vez de preenchimento */
-.chip { background: #fff; box-shadow: inset 0 0 0 1px var(--hair); padding: 5px 12px; }
-.chip b.chip.brand { box-shadow: none; }
+/* Etiquetas: contorno fino, pequenas */
+.chip { background: #fff; box-shadow: inset 0 0 0 1px var(--hair); }
+.badge { border-radius: 6px; }
+.badge.good, .badge.bad { background: transparent; box-shadow: inset 0 0 0 1px currentColor; }
 
-/* Badges de delta: pílula com ponto de cor */
-.badge.good, .badge.bad { padding: 0 9px 0 7px; font-weight: 700; }
-.badge.good::before, .badge.bad::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-
-/* Resumo: valores-chave na cor da marca; blocos limpos com fio à esquerda */
-.rs-bloco { background: #fff; box-shadow: inset 0 0 0 1px var(--hair); border-radius: 14px; position: relative; padding-left: 18px; }
-.rs-bloco::before { content: ""; position: absolute; left: 0; top: 12px; bottom: 12px; width: 3px; border-radius: 0 3px 3px 0; background: var(--brand); }
+/* Resumo e ficheiro: planos */
+.rs-bloco { background: #fff; border: 1px solid var(--hair); border-radius: 12px; }
 .rs-bloco.good, .rs-bloco.bad { background: #fff; }
-.rs-bloco.bad::before { background: var(--detractor); }
 .rs-bloco p strong { color: var(--brand-darkest); }
 .rs-bloco.bad p strong { color: var(--detractor-ink); }
-.rs-bloco .rs-t { font: var(--label); text-transform: uppercase; letter-spacing: .08em; }
-.rs-f { border: 0; box-shadow: inset 0 0 0 1px var(--hair); border-radius: 14px; }
-.rs-f b { font-size: 22px; letter-spacing: -.05em; }
-.filecard { border: 0; box-shadow: inset 0 0 0 1px var(--hair); border-radius: 14px; background: #fff; }
+.rs-bloco .rs-t { font: var(--label); text-transform: uppercase; letter-spacing: .07em; }
+.rs-f { border: 1px solid var(--hair); border-radius: 12px; }
+.rs-f b { font-size: 20px; font-weight: 600; letter-spacing: -.02em; }
+.filecard { border: 1px solid var(--hair); border-radius: 12px; }
 
-/* Composição D/N/P: barra fina e arredondada */
-.compo { height: 26px; border-radius: 99px; gap: 3px; }
+/* Composição D/N/P: barra fina e arredondada, como as barras de progresso da referência */
+.compo { height: 10px; border-radius: 99px; gap: 3px; }
+.compo div { font-size: 0; }
 .compo div:first-child { border-radius: 99px 0 0 99px; }
 .compo div:last-child { border-radius: 0 99px 99px 0; }
 
-/* Tabela: linhas finas, sem zebra; cabeçalho escuro do DS mantém-se */
-.tbl-wrap { border: 0; box-shadow: var(--halo); }
+/* Tabela: cabeçalho claro em maiúsculas, linhas finas, sem zebra */
+.tbl-wrap { border: 1px solid var(--hair); border-radius: 12px; }
+.tbl th { background: #fff; color: var(--text-tertiary); font: var(--label); text-transform: uppercase; letter-spacing: .07em; border-bottom: 1px solid var(--hair); padding: 12px; }
+.tbl th button:focus-visible { outline-color: var(--focus); }
 .tbl tbody tr:nth-child(even) td { background: transparent; }
-.tbl td { border-bottom-color: var(--hair); }
+.tbl td { border-bottom-color: var(--hair-2); }
+.tbl tbody tr:hover td { background: #fafafa; }
 
-/* Overview: cartões "ticker" por marca */
-.ov-card { border: 0; box-shadow: var(--halo); border-radius: 20px; padding: 18px 18px 14px; position: relative; overflow: hidden; isolation: isolate; }
-.ov-card::after { content: ""; position: absolute; z-index: -1; right: -60px; top: -60px; width: 180px; height: 180px; border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--tile-bg) 22%, transparent) 0%, transparent 70%); opacity: .9; transition: opacity .2s, transform .2s; }
-.ov-card:hover { box-shadow: var(--halo-hover); transform: translateY(-2px); }
-.ov-card:hover::after { transform: scale(1.15); }
+/* Overview: cartões planos */
+.ov-card { border: 1px solid var(--hair); box-shadow: none; border-radius: 14px; }
+.ov-card:hover { border-color: #dcdcdc; transform: none; box-shadow: 0 6px 18px -10px rgba(16,24,40,.18); }
 .ov-card .top b { font-size: 14px; font-weight: 600; }
-.ov-card .val b { font-size: 54px; line-height: 54px; letter-spacing: -.07em; }
-.ov-card .val .muted { font-size: 12px; }
-.ov-card .compo { height: 8px; gap: 2px; }
+.ov-card .val b { font-size: 36px; line-height: 40px; font-weight: 600; letter-spacing: -.03em; }
+.ov-card .compo { height: 8px; }
 .ov-card .meta { border-top: 1px solid var(--hair); padding-top: 10px; }
-.ov-card .wait { border: 0; background: var(--surface-mid); border-radius: 14px; }
-.ov-bar h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-secondary); }
+.ov-card .wait { border: 1px dashed #dcdcdc; background: #fff; }
+.ov-bar h2 { font-size: 15px; }
 
-/* Botões: pílula fantasma com halo */
-.btn-secondary { background: #fff; box-shadow: inset 0 0 0 1px var(--hair), 0 1px 2px rgba(16, 24, 40, .06); border-color: transparent; }
-.btn-secondary:hover { box-shadow: inset 0 0 0 1px rgba(16, 24, 40, .14), 0 4px 12px -4px rgba(16, 24, 40, .18); }
-
-/* Cabeçalho da marca: título grande e compacto */
-.brand-head h1 { font-size: 40px; line-height: 44px; letter-spacing: -.055em; }
-.brand-head .tile.mark { box-shadow: var(--halo); }
+/* Botões secundários: contorno fino */
+.btn-secondary { border-color: var(--hair); box-shadow: 0 1px 1px rgba(16,24,40,.04); }
+.btn-secondary:hover { border-color: #cfcfcf; }
 
 /* Resumo: "i" no canto superior direito de cada número; botões do ficheiro iguais */
 .rs-f { position: relative; padding-right: 26px; }
