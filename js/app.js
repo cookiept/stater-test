@@ -1,14 +1,14 @@
 // Stater · protótipo. Uma página, menu de marcas à esquerda, cada tab lê o seu Excel.
-import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1251';
-import { icon } from './icons.js?v=20261028-1251';
-import { logo } from './logos.js?v=20261028-1251';
-import { esc, info, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1251';
-import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261028-1251';
-import { resumoNps, fmt, sinal } from './stats.js?v=20261028-1251';
-import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1251';
-import * as vNps from './views/nps.js?v=20261028-1251';
-import * as vCausas from './views/causas.js?v=20261028-1251';
-import { exemplos } from './exemplo.js?v=20261028-1251';
+import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1302';
+import { icon } from './icons.js?v=20261028-1302';
+import { logo } from './logos.js?v=20261028-1302';
+import { esc, info, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1302';
+import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261028-1302';
+import { resumoNps, fmt, sinal } from './stats.js?v=20261028-1302';
+import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1302';
+import * as vNps from './views/nps.js?v=20261028-1302';
+import * as vCausas from './views/causas.js?v=20261028-1302';
+import { exemplos } from './exemplo.js?v=20261028-1302';
 
 // Tabs que funcionam no protótipo
 const ANALISES = {
@@ -77,7 +77,6 @@ function sidebar({ brand, tab }) {
 // ---------- Barra de topo ----------
 function topbar({ brand, tab }) {
   const rec = brand && tab ? store.get(brand.id, tab.id) : null;
-  const live = ativa(brand, tab);
   const crumbs = brand
     ? `<span>Stater</span>${icon('chevron')}<span>${esc(brand.name)}</span>${icon('chevron')}<b>${esc(tab.name)}</b>`
     : `<span>Stater</span>${icon('chevron')}<b>Overview</b>`;
@@ -85,7 +84,7 @@ function topbar({ brand, tab }) {
     <nav class="crumbs" aria-label="Onde estás">${crumbs}</nav>
     <div class="spacer"></div>
     ${rec ? `<span class="updated">Atualizado a ${formatarData(rec.savedAt)}</span>` : ''}
-    ${brand ? `<button class="btn btn-primary" data-act="upload" ${live ? '' : 'disabled'}>${icon('upload')} Carregar Excel</button>` : ''}`;
+`;
 }
 
 // ---------- Painel da tab ----------
