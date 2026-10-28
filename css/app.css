@@ -514,3 +514,9 @@ dialog .row { display: flex; gap: 8px; justify-content: flex-end; }
 /* Cabeçalho da marca: título grande e compacto */
 .brand-head h1 { font-size: 40px; line-height: 44px; letter-spacing: -.055em; }
 .brand-head .tile.mark { box-shadow: var(--halo); }
+
+/* Resumo: "i" no canto superior direito de cada número; botões do ficheiro iguais */
+.rs-f { position: relative; padding-right: 26px; }
+.rs-i { position: absolute; top: 8px; right: 8px; line-height: 0; }
+.file-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.file-actions .btn { justify-content: center; width: 100%; }

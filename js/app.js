@@ -1,14 +1,14 @@
 // Stater · protótipo. Uma página, menu de marcas à esquerda, cada tab lê o seu Excel.
-import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1309';
-import { icon } from './icons.js?v=20261028-1309';
-import { logo } from './logos.js?v=20261028-1309';
-import { esc, info, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1309';
-import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261028-1309';
-import { resumoNps, fmt, sinal } from './stats.js?v=20261028-1309';
-import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1309';
-import * as vNps from './views/nps.js?v=20261028-1309';
-import * as vCausas from './views/causas.js?v=20261028-1309';
-import { exemplos } from './exemplo.js?v=20261028-1309';
+import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1328';
+import { icon } from './icons.js?v=20261028-1328';
+import { logo } from './logos.js?v=20261028-1328';
+import { esc, info, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1328';
+import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData } from './excel.js?v=20261028-1328';
+import { resumoNps, fmt, sinal } from './stats.js?v=20261028-1328';
+import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1328';
+import * as vNps from './views/nps.js?v=20261028-1328';
+import * as vCausas from './views/causas.js?v=20261028-1328';
+import { exemplos } from './exemplo.js?v=20261028-1328';
 
 // Tabs que funcionam no protótipo
 const ANALISES = {
@@ -125,7 +125,7 @@ function resumoHtml(r) {
   return `<div class="resumo">
     <h3 class="sec-title">Resumo <span class="badge" data-tip-title="Regras fixas" data-tip="${TIP_REGRAS}" tabindex="0">Regras fixas</span></h3>
     ${blocos.map(b => `<div class="rs-bloco ${b.tom || ''}">${b.titulo ? `<b class="rs-t">${b.titulo}</b>` : ''}<p>${b.texto}</p></div>`).join('')}
-    ${r.factos ? `<div class="rs-factos">${r.factos.map(f => `<div class="rs-f ${f.tom || ''}"><b class="num">${f.valor}</b><span>${f.rot} ${f.tip ? info(f.rot, f.tip) : ''}</span></div>`).join('')}</div>` : ''}
+    ${r.factos ? `<div class="rs-factos">${r.factos.map(f => `<div class="rs-f ${f.tom || ''}">${f.tip ? `<span class="rs-i">${info(f.rot, f.tip)}</span>` : ''}<b class="num">${f.valor}</b><span>${f.rot}</span></div>`).join('')}</div>` : ''}
     ${r.notas?.length ? `<ul class="rs-notas">${r.notas.map(n => `<li>${n}</li>`).join('')}</ul>` : ''}
   </div>`;
 }
@@ -161,7 +161,7 @@ function painel(brand, tab) {
           <div class="filecard">${icon('file')}<div><div class="fn">${esc(rec.fileName)}</div><div class="fm">Carregado a ${formatarData(rec.savedAt)} · ${esc(formatarPeriodo(rec.data.periodo))}</div></div></div>
           <div class="file-actions">
             <button class="btn btn-secondary btn-sm" data-act="upload">${icon('upload')} Substituir</button>
-            <button class="btn btn-danger-ghost btn-sm" data-act="clear">${icon('trash')} Apagar dados desta tab</button>
+            <button class="btn btn-danger-ghost btn-sm" data-act="clear" title="Apaga só o ficheiro desta tab">${icon('trash')} Apagar</button>
           </div>
         </div>
         <details class="fold">
