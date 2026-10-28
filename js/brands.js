@@ -103,6 +103,10 @@ export const BRANDS = [
   },
 ];
 
+// Ordem das marcas no menu, na Overview e no gráfico (pedida pelo Gonçalo)
+const ORDEM = ["brisaautoestradas", "viaverde", "colibri", "controlauto", "controlautoitv", "nedlinq"];
+BRANDS.sort((a, b) => ORDEM.indexOf(a.id) - ORDEM.indexOf(b.id));
+
 export const brandById = id => BRANDS.find(b => b.id === id);
 
 // Aplica a identidade de uma marca (ou do grupo) às variáveis CSS.
