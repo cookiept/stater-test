@@ -1,9 +1,11 @@
 // Tab "NPS": distribuição das notas 0–10 (Stats iQ Describe).
-import { resumoNps, fmt, sinal, LIMITES } from '../stats.js?v=20261028-1539';
-import { base, junta, desenhar } from '../charts.js?v=20261028-1539';
-import { info, esc, def, GLOSSARIO, btnPptx, faixa } from '../ui.js?v=20261028-1539';
-import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1539';
-import { icon } from '../icons.js?v=20261028-1539';
+import { resumoNps, fmt, sinal, LIMITES } from '../stats.js?v=20261028-1605';
+import { base, junta, desenhar } from '../charts.js?v=20261028-1605';
+import { info, esc, def, GLOSSARIO, btnPptx, faixa } from '../ui.js?v=20261028-1605';
+import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1605';
+import { icon } from '../icons.js?v=20261028-1605';
+
+const estadoMeta = (nps, meta) => (nps > meta ? 'Acima da meta' : nps === meta ? 'Na meta' : 'Abaixo da meta');
 
 export function chips(rec) {
   return { respostas: resumoNps(rec.data.contagens).total };
@@ -48,7 +50,6 @@ export function html(rec, meta) {
       <span class="kv num">${val}</span><span class="kd">${det}</span>
     </div>`;
   const avisos = [];
-  if (r.nps < meta) avisos.push(faixa('bad', 'Abaixo da meta.', `O NPS de ${fmt(r.nps)} está ${meta - r.nps} ${meta - r.nps === 1 ? 'ponto' : 'pontos'} abaixo da meta de ${meta}.`));
   if (r.total < LIMITES.poucasRespostas) avisos.push(faixa('mid', 'Poucas respostas.', `Só ${fmt(r.total)} respostas: o NPS pode mudar muito com cada pessoa. Usa estes números só como indicação.`));
   return `
     ${avisos.join('')}
@@ -105,7 +106,7 @@ export function mount(rec, brand, meta) {
         startAngle: -95, endAngle: 95, hollow: { size: '62%' },
         track: { background: '#f0f0f0', strokeWidth: '100%', margin: 0 },
         dataLabels: {
-          name: { show: true, offsetY: 26, color: '#767676', fontSize: '12px', formatter: () => `meta ${meta} · ${r.nps >= meta ? 'atingida' : `faltam ${meta - r.nps}`}` },
+          name: { show: true, offsetY: 26, color: r.nps >= meta ? '#10641d' : '#ad2c19', fontSize: '12px', fontWeight: 600, formatter: () => `Meta ${meta} · ${estadoMeta(r.nps, meta)}` },
           value: { offsetY: -14, fontSize: '40px', fontWeight: 700, color: '#1a1a1a', formatter: () => fmt(r.nps) },
         },
       },
@@ -171,7 +172,7 @@ export function exportar(rec, brand, meta) {
           s.addText([
             { text: 'NPS', options: { fontSize: 14, color: '767676', breakLine: true } },
             { text: fmt(r.nps), options: { fontSize: 60, bold: true, color: '1A1A1A', breakLine: true } },
-            { text: `Meta ${meta} · ${r.nps >= meta ? 'atingida' : `faltam ${meta - r.nps}`}`, options: { fontSize: 14, color: r.nps >= meta ? '10641D' : 'AD2C19' } },
+            { text: `Meta ${meta} · ${estadoMeta(r.nps, meta)}`, options: { fontSize: 14, color: r.nps >= meta ? '10641D' : 'AD2C19' } },
           ], { x: 8, y: 2.4, w: 4.8, h: 2.6, fontFace: b.fontFace, valign: 'middle' });
         },
       },
