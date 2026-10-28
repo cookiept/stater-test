@@ -682,3 +682,6 @@ dialog .row { display: flex; gap: 8px; justify-content: flex-end; }
 .ov-card .meta { font-size: 14px; color: var(--text-secondary); }
 .ov-card .meta .ico { width: 17px; height: 17px; }
 .ov-card .meta b { font-size: 17px; }
+/* Gráficos com cores padrão em todas as marcas (promotores a verde) */
+:root { --promoter: #22a03b; }
+.compo .p, .minibar .p, .ov-dnp i.p { background: var(--promoter); color: #fff; }

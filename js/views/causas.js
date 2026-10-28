@@ -1,9 +1,9 @@
 // Tab "NPS por Causa Raiz": Relate de Group NPS com a causa raiz (resposta múltipla).
-import { enriquecerCausas, comZeros, npsDe, fmt, sinal, destaques, causasFiaveis } from '../stats.js?v=20261028-1657';
-import { base, junta, desenhar } from '../charts.js?v=20261028-1657';
-import { info, esc, def, btnPptx, faixa } from '../ui.js?v=20261028-1657';
-import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1657';
-import { icon } from '../icons.js?v=20261028-1657';
+import { enriquecerCausas, comZeros, npsDe, fmt, sinal, destaques, causasFiaveis, CORES } from '../stats.js?v=20261028-1659';
+import { base, junta, desenhar } from '../charts.js?v=20261028-1659';
+import { info, esc, def, btnPptx, faixa } from '../ui.js?v=20261028-1659';
+import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1659';
+import { icon } from '../icons.js?v=20261028-1659';
 
 export const npsGlobal = data => {
   const a = data.amostraGrupo;
@@ -69,7 +69,7 @@ export function html(rec, meta) {
     <section class="card" aria-labelledby="h-comp">
       <div class="card-head">
         <h3 id="h-comp">Quem escolheu cada causa ${info('Composição por causa', 'Para cada causa, a parte de detratores, neutros e promotores entre quem a escolheu. Ordenado por número de menções.')}</h3>
-        <div class="legend" style="margin:0 0 0 auto"><span><i style="background:var(--detractor)"></i>Detratores</span><span><i style="background:var(--passive)"></i>Neutros</span><span><i style="background:var(--brand)"></i>Promotores</span></div>
+        <div class="legend" style="margin:0 0 0 auto"><span><i style="background:var(--detractor)"></i>Detratores</span><span><i style="background:var(--passive)"></i>Neutros</span><span><i style="background:var(--promoter)"></i>Promotores</span></div>
         ${btnPptx('comp')}
       </div>
       <div id="ch-comp" class="chart" role="img" aria-label="Composição de detratores, neutros e promotores por causa"></div>
@@ -146,10 +146,10 @@ export function mount(rec, brand, meta) {
       { name: 'Neutros', data: cs.map(c => c.n) },
       { name: 'Promotores', data: cs.map(c => c.p) },
     ],
-    colors: ['#db3a23', '#c4c4c4', brand.colors.main],
+    colors: [CORES.det, CORES.neu, CORES.pro],
     plotOptions: { bar: { horizontal: true, barHeight: '62%', borderRadius: 4, borderRadiusApplication: 'around', borderRadiusWhenStacked: 'all' } },
     stroke: { width: 2, colors: ['#fff'] },
-    dataLabels: { enabled: true, formatter: (v) => (v >= 8 ? `${fmt(v)}%` : ''), style: { fontSize: '11px', fontWeight: 600, colors: ['#fff', '#1a1a1a', brand.colors.on] }, dropShadow: { enabled: false } },
+    dataLabels: { enabled: true, formatter: (v) => (v >= 8 ? `${fmt(v)}%` : ''), style: { fontSize: '11px', fontWeight: 600, colors: ['#fff', '#1a1a1a', '#fff'] }, dropShadow: { enabled: false } },
     xaxis: { categories: cs.map(c => [c.nome.length > 30 ? c.nome.slice(0, 29) + '…' : c.nome, c.zero ? '0 menções' : `${fmt(c.total)} menções · NPS ${fmt(c.nps)}`]), labels: { formatter: v => `${v}%` }, axisBorder: { show: false } },
     yaxis: { labels: { minWidth: 230, maxWidth: 230, offsetX: 4, style: { fontSize: '12px', colors: ['#1a1a1a'] } } },
     tooltip: { shared: true, intersect: false, y: { formatter: (v, { seriesIndex, dataPointIndex }) => `${fmt(v)} (${fmt([cs[dataPointIndex].pctD, cs[dataPointIndex].pctN, cs[dataPointIndex].pctP][seriesIndex], 1)}%)` } },
@@ -159,7 +159,7 @@ export function mount(rec, brand, meta) {
   desenhar(document.getElementById('ch-mat'), junta(b, {
     chart: { type: 'scatter', height: 340 },
     series: comM.map(c => ({ name: c.nome, data: [[c.total, c.nps]] })),
-    colors: comM.map(c => (c.nps < meta ? '#db3a23' : brand.colors.main)),
+    colors: comM.map(c => (c.nps < meta ? CORES.det : CORES.pro)),
     markers: { size: 11, strokeWidth: 2, strokeColors: '#fff', hover: { sizeOffset: 2 } },
     xaxis: { type: 'numeric', tickAmount: 5, min: 0, max: Math.ceil(Math.max(...comM.map(c => c.total)) * 1.15), labels: { formatter: v => fmt(v) }, title: { text: 'Menções', style: { fontSize: '11px', fontWeight: 500, color: '#767676' } } },
     yaxis: { min: Math.min(-20, Math.floor(Math.min(...comM.map(c => c.nps)) / 10) * 10 - 10), max: 100, tickAmount: 4, title: { text: 'NPS', style: { fontSize: '11px', fontWeight: 500, color: '#767676' } } },
@@ -171,7 +171,7 @@ export function mount(rec, brand, meta) {
     grid: { xaxis: { lines: { show: true } } },
   }));
 
-  document.getElementById('lg-mat').innerHTML = comM.map(c => `<span><i style="background:${c.nps < meta ? '#db3a23' : brand.colors.main};border-radius:50%"></i>${esc(c.nome)} <b class="num">${fmt(c.nps)}</b></span>`).join('');
+  document.getElementById('lg-mat').innerHTML = comM.map(c => `<span><i style="background:${c.nps < meta ? CORES.det : CORES.pro};border-radius:50%"></i>${esc(c.nome)} <b class="num">${fmt(c.nps)}</b></span>`).join('');
 
   // Tabela: ordenar e procurar
   const tbody = document.querySelector('#tbl-causas tbody');
@@ -201,12 +201,12 @@ export const graficoComposicao = (b, brand, cs, rot = c => c.nome) => (s, p) => 
   { name: 'Detratores', labels: cs.map(rot), values: cs.map(c => c.d) },
   { name: 'Neutros', labels: cs.map(rot), values: cs.map(c => c.n) },
   { name: 'Promotores', labels: cs.map(rot), values: cs.map(c => c.p) },
-], { ...b, barDir: 'bar', barGrouping: 'percentStacked', barGapWidthPct: 45, catAxisOrientation: 'maxMin', chartColors: ['DB3A23', 'C4C4C4', hex(brand.colors.main)], showValue: false, catAxisLabelFontSize: 10, valAxisLabelFormatCode: '0%' });
+], { ...b, barDir: 'bar', barGrouping: 'percentStacked', barGapWidthPct: 45, catAxisOrientation: 'maxMin', chartColors: [hex(CORES.det), hex(CORES.neu), hex(CORES.pro)], showValue: false, catAxisLabelFontSize: 10, valAxisLabelFormatCode: '0%' });
 
 export const graficoMatriz = (b, brand, todas, meta, cs = todas.filter(c => !c.zero)) => (s, p) => s.addChart(p.ChartType.scatter, [
   { name: 'Menções', values: cs.map(c => c.total) },
   { name: 'NPS', values: cs.map(c => c.nps), labels: cs.map(c => c.nome) },
-], { ...b, chartColors: [hex(brand.colors.main)], lineSize: 0, lineDataSymbolSize: 12, showLegend: false, showLabel: true, dataLabelFormatScatter: 'custom', dataLabelPosition: 'r',
+], { ...b, chartColors: [hex(CORES.pro)], lineSize: 0, lineDataSymbolSize: 12, showLegend: false, showLabel: true, dataLabelFormatScatter: 'custom', dataLabelPosition: 'r',
   showValAxisTitle: true, valAxisTitle: `NPS (meta ${meta})`, showCatAxisTitle: true, catAxisTitle: 'Menções', valAxisMinVal: -100, valAxisMaxVal: 100 });
 
 export const tabelaPptx = (b, brand, cs, meta, comDriver = false) => (s) => {

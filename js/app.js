@@ -1,16 +1,16 @@
 // Stater · protótipo. Uma página, menu de marcas à esquerda, cada tab lê o seu Excel.
-import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1657';
-import { icon } from './icons.js?v=20261028-1657';
-import { logo } from './logos.js?v=20261028-1657';
-import { esc, info, def, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1657';
-import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData, identificar, TIPOS } from './excel.js?v=20261028-1657';
-import { resumoNps, fmt, sinal, LIMITES, enriquecerCausas, causasFiaveis, destaques } from './stats.js?v=20261028-1657';
-import { exportarGrafico, exportarTab, exportarOverview, imprimir } from './export.js?v=20261028-1657';
-import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1657';
-import * as vNps from './views/nps.js?v=20261028-1657';
-import * as vCausas from './views/causas.js?v=20261028-1657';
-import * as vMolho from './views/molho.js?v=20261028-1657';
-import { exemplos } from './exemplo.js?v=20261028-1657';
+import { BRANDS, GROUP, brandById, applyTheme } from './brands.js?v=20261028-1659';
+import { icon } from './icons.js?v=20261028-1659';
+import { logo } from './logos.js?v=20261028-1659';
+import { esc, info, def, ligarTooltips, toast, confirmar } from './ui.js?v=20261028-1659';
+import { lerPrimeiraFolha, parseNps, parseCausas, FicheiroErrado, formatarPeriodo, formatarData, identificar, TIPOS } from './excel.js?v=20261028-1659';
+import { resumoNps, fmt, sinal, LIMITES, CORES, corMeta, enriquecerCausas, causasFiaveis, destaques } from './stats.js?v=20261028-1659';
+import { exportarGrafico, exportarTab, exportarOverview, imprimir } from './export.js?v=20261028-1659';
+import { limparGraficos, base, junta, desenhar } from './charts.js?v=20261028-1659';
+import * as vNps from './views/nps.js?v=20261028-1659';
+import * as vCausas from './views/causas.js?v=20261028-1659';
+import * as vMolho from './views/molho.js?v=20261028-1659';
+import { exemplos } from './exemplo.js?v=20261028-1659';
 
 // Tabs que funcionam no protótipo
 const ANALISES = {
@@ -307,8 +307,8 @@ function overview() {
         <div class="top"><span class="tile mark">${logo(b.icon)}</span><b>${esc(b.name)}</b>
           ${r ? `<span class="badge ${r.nps >= m ? 'good' : 'bad'}" title="${r.nps >= m ? 'Meta atingida' : 'Abaixo da meta'}">${sinal(r.nps - m)} vs meta</span>` : '<span class="badge">Sem dados</span>'}</div>
         ${r ? `<div class="val"><b class="num">${fmt(r.nps)}</b><span class="muted">NPS · ${fmt(r.total)} respostas</span></div>
-          <div class="compo" style="height:10px" aria-hidden="true"><div class="d" style="flex:${r.pctD}"></div><div class="n" style="flex:${r.pctN}"></div><div class="p" style="flex:${r.pctP};background:${b.colors.main}"></div></div>
-          <div class="ov-dnp num"><span><i class="d"></i>Detratores ${fmt(r.pctD)}%</span><span><i class="n"></i>Neutros ${fmt(r.pctN)}%</span><span><i class="p" style="background:${b.colors.main}"></i>Promotores ${fmt(r.pctP)}%</span></div>
+          <div class="compo" style="height:10px" aria-hidden="true"><div class="d" style="flex:${r.pctD}"></div><div class="n" style="flex:${r.pctN}"></div><div class="p" style="flex:${r.pctP}"></div></div>
+          <div class="ov-dnp num"><span><i class="d"></i>Detratores ${fmt(r.pctD)}%</span><span><i class="n"></i>Neutros ${fmt(r.pctN)}%</span><span><i class="p"></i>Promotores ${fmt(r.pctP)}%</span></div>
           <dl class="ov-mais">
             <div><dt>Média</dt><dd class="num">${fmt(r.media, 1)}</dd></div>
             <div><dt>Período</dt><dd>${esc(formatarPeriodo(rec.data.periodo))}</dd></div>
@@ -323,8 +323,8 @@ function overview() {
       </div>`).join('')}
     </div>
     <section class="card" style="background:#fff" aria-labelledby="h-ov">
-      <div class="card-head"><h3 id="h-ov">NPS vs meta por marca ${info('NPS vs meta', 'Barra colorida: NPS da tab NPS de cada marca. Barra cinzenta: meta definida em Editar metas. Marcas sem dados só mostram a meta.')}</h3>
-        <div class="legend" style="margin:0 0 0 auto"><span><i style="background:conic-gradient(#005555 0 25%,#f96730 0 50%,#ffd552 0 75%,#008635 0)"></i>NPS (cor de cada marca)</span><span><i style="background:#d6dde3"></i>Meta</span></div></div>
+      <div class="card-head"><h3 id="h-ov">NPS vs meta por marca ${info('NPS vs meta', 'Barra verde: NPS na meta ou acima. Barra vermelha: NPS abaixo da meta. Barra cinzenta: meta definida em Editar metas. Marcas sem dados só mostram a meta.')}</h3>
+        <div class="legend" style="margin:0 0 0 auto"><span><i style="background:${CORES.pro}"></i>NPS na meta ou acima</span><span><i style="background:${CORES.det}"></i>NPS abaixo da meta</span><span><i style="background:${CORES.meta}"></i>Meta</span></div></div>
       <div id="ch-ov" class="chart"></div>
       <div class="ov-eixo" id="ov-eixo" aria-hidden="true">${BRANDS.map(b => `<span>${esc(b.name)}</span>`).join('')}</div>
     </section>`;
@@ -375,7 +375,7 @@ function montarOverview() {
     // Os nomes saem do eixo e vão para a linha HTML #ov-eixo, com o logótipo antes do nome
     chart: { type: 'bar', height: 300, events: { mounted: alinharEixo, updated: alinharEixo, animationEnd: alinharEixo } },
     series: [
-      { name: 'NPS', data: dados.map(d => ({ x: d.b.name, y: d.r ? d.r.nps : null, fillColor: d.b.colors.main })) },
+      { name: 'NPS', data: dados.map(d => ({ x: d.b.name, y: d.r ? d.r.nps : null, fillColor: d.r ? corMeta(d.r.nps, d.m) : CORES.meta })) },
       { name: 'Meta', data: dados.map(d => ({ x: d.b.name, y: d.m, fillColor: '#d6dde3' })) },
     ],
     legend: { show: false },
@@ -390,7 +390,7 @@ function montarOverview() {
     // Tooltip próprio: a bolinha do NPS tem a cor da marca, como a barra
     tooltip: { shared: true, intersect: false, custom: ({ dataPointIndex: i }) => { const d = dados[i]; if (!d) return '';
       const linha = (cor, rot, v) => `<div class="ov-tt-l"><i style="background:${cor}"></i>${rot}<b>${v == null ? 'sem dados' : fmt(v)}</b></div>`;
-      return `<div class="ov-tt"><div class="ov-tt-t">${esc(d.b.name)}</div>${linha(d.b.colors.main, 'NPS', d.r ? d.r.nps : null)}${linha('#d6dde3', 'Meta', d.m)}</div>`; } },
+      return `<div class="ov-tt"><div class="ov-tt-t">${esc(d.b.name)}</div>${linha(d.r ? corMeta(d.r.nps, d.m) : CORES.meta, 'NPS', d.r ? d.r.nps : null)}${linha('#d6dde3', 'Meta', d.m)}</div>`; } },
     // No hover as barras mantêm a cor da marca
     states: { hover: { filter: { type: 'none' } }, active: { filter: { type: 'none' } } },
   }));

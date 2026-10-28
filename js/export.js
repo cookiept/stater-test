@@ -124,7 +124,7 @@ export async function exportarOverview(grupo, dados, alertas) {
   s.addChart(p.ChartType.bar, [
     { name: 'NPS', labels: com.map(d => d.b.name), values: com.map(d => d.r.nps) },
     { name: 'Meta', labels: com.map(d => d.b.name), values: com.map(d => d.m) },
-  ], { ...baseGrafico(grupo), w: 7.6, barDir: 'col', barGrouping: 'clustered', barGapWidthPct: 60, chartColors: [hex(grupo.colors.main), 'D6DDE3'], showValue: true, valAxisMinVal: -20, valAxisMaxVal: 100 });
+  ], { ...baseGrafico(grupo), w: 7.6, barDir: 'col', barGrouping: 'clustered', barGapWidthPct: 60, chartColors: ['22A03B', 'D6DDE3'], showValue: true, valAxisMinVal: -20, valAxisMaxVal: 100 });
   s.addText('ALERTAS ABAIXO DA META', { x: 8.4, y: 1.5, w: 4.4, h: 0.3, fontSize: 10, bold: true, color: '767676', fontFace: fonte(grupo), margin: 0 });
   s.addText(alertas.length ? alertas.map(a => ({ text: `${a.marca} · ${a.tipo}: ${a.nome} (NPS ${a.nps}, meta ${a.meta})`, options: { bullet: true, breakLine: true, paraSpaceAfter: 4 } }))
     : [{ text: 'Sem alertas: tudo acima da meta.' }],

@@ -1,3 +1,7 @@
+// Cores dos gráficos: as mesmas em todas as marcas (vermelho = detratores / abaixo da meta, cinzento = neutros, verde = promotores / na meta).
+export const CORES = { det: '#db3a23', neu: '#c4c4c4', pro: '#22a03b', proClaro: '#bfe5c8', meta: '#d6dde3' };
+export const corMeta = (nps, meta) => (nps >= meta ? CORES.pro : CORES.det);
+
 // Contas do NPS: uma regra para todo o Stater.
 // 0–6 detrator, 7–8 neutro, 9–10 promotor. NPS = %promotores − %detratores, calculado a partir das contagens e arredondado no fim.
 

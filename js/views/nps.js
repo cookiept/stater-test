@@ -1,9 +1,9 @@
 // Tab "NPS": distribuição das notas 0–10 (Stats iQ Describe).
-import { resumoNps, fmt, sinal, LIMITES } from '../stats.js?v=20261028-1657';
-import { base, junta, desenhar } from '../charts.js?v=20261028-1657';
-import { info, esc, def, GLOSSARIO, btnPptx, faixa } from '../ui.js?v=20261028-1657';
-import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1657';
-import { icon } from '../icons.js?v=20261028-1657';
+import { resumoNps, fmt, sinal, LIMITES, CORES, corMeta } from '../stats.js?v=20261028-1659';
+import { base, junta, desenhar } from '../charts.js?v=20261028-1659';
+import { info, esc, def, GLOSSARIO, btnPptx, faixa } from '../ui.js?v=20261028-1659';
+import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1659';
+import { icon } from '../icons.js?v=20261028-1659';
 
 const estadoMeta = (nps, meta) => (nps > meta ? 'Acima da meta' : nps === meta ? 'Na meta' : 'Abaixo da meta');
 
@@ -72,7 +72,7 @@ export function html(rec, meta) {
           <div class="n" style="flex:${r.pctN}">${r.pctN >= 6 ? fmt(r.pctN) + '%' : ''}</div>
           <div class="p" style="flex:${r.pctP}">${fmt(r.pctP)}%</div>
         </div>
-        <div class="legend"><span><i style="background:var(--detractor)"></i>Detratores 0–6</span><span><i style="background:var(--passive)"></i>Neutros 7–8</span><span><i style="background:var(--brand)"></i>Promotores 9–10</span></div>
+        <div class="legend"><span><i style="background:var(--detractor)"></i>Detratores 0–6</span><span><i style="background:var(--passive)"></i>Neutros 7–8</span><span><i style="background:var(--promoter)"></i>Promotores 9–10</span></div>
         <div style="height:10px"></div>
       </section>
       <section class="card" aria-labelledby="h-dist">
@@ -95,14 +95,14 @@ export function html(rec, meta) {
 export function mount(rec, brand, meta) {
   const c = rec.data.contagens;
   const r = resumoNps(c);
-  const brandC = brand.colors.main;
-  const cores = c.map((_, i) => (i <= 6 ? '#db3a23' : i <= 8 ? '#c4c4c4' : brandC));
+  const cores = c.map((_, i) => (i <= 6 ? CORES.det : i <= 8 ? CORES.neu : CORES.pro));
+  const corG = corMeta(r.nps, meta);
   const b = base(brand);
 
   desenhar(document.getElementById('ch-gauge'), junta(b, {
     chart: { type: 'radialBar', height: 280, sparkline: { enabled: true } },
     series: [Math.max(0, Math.min(100, (r.nps + 100) / 2))],
-    colors: [brandC],
+    colors: [corG],
     plotOptions: {
       radialBar: {
         startAngle: -95, endAngle: 95, hollow: { size: '62%' },
@@ -113,7 +113,7 @@ export function mount(rec, brand, meta) {
         },
       },
     },
-    fill: { type: 'gradient', gradient: { shade: 'light', type: 'horizontal', gradientToColors: [brand.colors.light], stops: [0, 100] } },
+    fill: { type: 'gradient', gradient: { shade: 'light', type: 'horizontal', gradientToColors: [r.nps >= meta ? '#7fd394' : '#f19a8c'], stops: [0, 100] } },
     stroke: { lineCap: 'round' },
     labels: ['NPS'],
   }));
@@ -138,7 +138,7 @@ export function mount(rec, brand, meta) {
   desenhar(document.getElementById('ch-mes'), junta(b, {
     chart: { type: 'bar', height: 220 },
     series: [{ name: 'NPS (fictício)', data: desvios.map(d => r.nps + d) }],
-    colors: desvios.map((_, i) => (i >= 9 ? brandC : brand.colors.lightest)),
+    colors: desvios.map((_, i) => (i >= 9 ? CORES.pro : CORES.proClaro)),
     plotOptions: { bar: { borderRadius: 5, borderRadiusApplication: 'end', columnWidth: '58%', distributed: true, dataLabels: { position: 'top' } } },
     dataLabels: { enabled: true, offsetY: -18, style: { fontSize: '11px', fontWeight: 600, colors: ['#494949'] } },
     xaxis: { categories: meses, axisBorder: { show: false }, axisTicks: { show: false } },
@@ -170,7 +170,7 @@ export function exportar(rec, brand, meta) {
         id: 'gauge', titulo: 'NPS face à meta',
         desenhar: (s, p) => {
           s.addChart(p.ChartType.doughnut, [{ name: 'Respostas', labels: ['Detratores 0–6', 'Neutros 7–8', 'Promotores 9–10'], values: [r.d, r.n, r.p] }],
-            { ...b, x: 0.5, w: 7, holeSize: 62, chartColors: ['DB3A23', 'C4C4C4', hex(brand.colors.main)], showPercent: true, showValue: false, dataLabelColor: 'FFFFFF', legendPos: 'r' });
+            { ...b, x: 0.5, w: 7, holeSize: 62, chartColors: [hex(CORES.det), hex(CORES.neu), hex(CORES.pro)], showPercent: true, showValue: false, dataLabelColor: 'FFFFFF', legendPos: 'r' });
           s.addText([
             { text: 'NPS', options: { fontSize: 14, color: '767676', breakLine: true } },
             { text: fmt(r.nps), options: { fontSize: 60, bold: true, color: '1A1A1A', breakLine: true } },
@@ -185,7 +185,7 @@ export function exportar(rec, brand, meta) {
           { name: 'Detratores', labels: c.map((_, i) => String(i)), values: c.map((v, i) => (i <= 6 ? pct(v) : 0)) },
           { name: 'Neutros', labels: c.map((_, i) => String(i)), values: c.map((v, i) => (i === 7 || i === 8 ? pct(v) : 0)) },
           { name: 'Promotores', labels: c.map((_, i) => String(i)), values: c.map((v, i) => (i >= 9 ? pct(v) : 0)) },
-        ], { ...b, barDir: 'col', barGrouping: 'stacked', barGapWidthPct: 40, chartColors: ['DB3A23', 'C4C4C4', hex(brand.colors.main)], showValue: true, dataLabelFormatCode: '0.0"%";;;', dataLabelPosition: 'inEnd', valAxisLabelFormatCode: '0"%"' }),
+        ], { ...b, barDir: 'col', barGrouping: 'stacked', barGapWidthPct: 40, chartColors: [hex(CORES.det), hex(CORES.neu), hex(CORES.pro)], showValue: true, dataLabelFormatCode: '0.0"%";;;', dataLabelPosition: 'inEnd', valAxisLabelFormatCode: '0"%"' }),
       },
     ],
   };

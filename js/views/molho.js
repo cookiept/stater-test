@@ -1,12 +1,12 @@
 // Tab "Todos ao molho" (Tabela única de causas): junta as causas raiz de todos os drivers numa só tabela.
 // Cada driver é um Excel "Relate" de Group NPS com a causa raiz desse driver; carregam-se vários de uma vez.
-import { enriquecerCausas, comZeros, fmt, sinal, destaques, causasFiaveis } from '../stats.js?v=20261028-1657';
-import { base, junta, desenhar } from '../charts.js?v=20261028-1657';
-import { info, esc, def, btnPptx, faixa } from '../ui.js?v=20261028-1657';
-import { icon } from '../icons.js?v=20261028-1657';
-import { formatarPeriodo } from '../excel.js?v=20261028-1657';
-import { npsGlobal, destaquesHtml, linhas, tabelaPptx } from './causas.js?v=20261028-1657';
-import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1657';
+import { CORES, enriquecerCausas, comZeros, fmt, sinal, destaques, causasFiaveis } from '../stats.js?v=20261028-1659';
+import { base, junta, desenhar } from '../charts.js?v=20261028-1659';
+import { info, esc, def, btnPptx, faixa } from '../ui.js?v=20261028-1659';
+import { icon } from '../icons.js?v=20261028-1659';
+import { formatarPeriodo } from '../excel.js?v=20261028-1659';
+import { npsGlobal, destaquesHtml, linhas, tabelaPptx } from './causas.js?v=20261028-1659';
+import { baseGrafico, hex, textoDe } from '../export.js?v=20261028-1659';
 
 export const multi = true;
 
@@ -97,7 +97,7 @@ export function html(rec, meta) {
     <section class="card" aria-labelledby="h-top">
       <div class="card-head">
         <h3 id="h-top">Causas que mais pesam ${info('Causas que mais pesam', 'As 12 causas com mais menções, de todos os drivers. Cada barra mostra quantos detratores, neutros e promotores a escolheram.')}</h3>
-        <div class="legend" style="margin:0 0 0 auto"><span><i style="background:var(--detractor)"></i>Detratores</span><span><i style="background:var(--passive)"></i>Neutros</span><span><i style="background:var(--brand)"></i>Promotores</span></div>
+        <div class="legend" style="margin:0 0 0 auto"><span><i style="background:var(--detractor)"></i>Detratores</span><span><i style="background:var(--passive)"></i>Neutros</span><span><i style="background:var(--promoter)"></i>Promotores</span></div>
         ${btnPptx('top')}
       </div>
       <div id="ch-top" class="chart" role="img" aria-label="As 12 causas com mais menções"></div>
@@ -135,7 +135,7 @@ export function mount(rec, brand, meta) {
 
   desenhar(document.getElementById('ch-drv'), junta(b, {
     chart: { type: 'bar', height: Math.max(200, ds.length * 46 + 70) },
-    series: [{ name: 'NPS', data: ds.map(d => ({ x: d.nome, y: d.nps, fillColor: d.abaixo ? '#db3a23' : brand.colors.main })) }],
+    series: [{ name: 'NPS', data: ds.map(d => ({ x: d.nome, y: d.nps, fillColor: d.abaixo ? CORES.det : CORES.pro })) }],
     plotOptions: { bar: { horizontal: true, barHeight: '58%', borderRadius: 4, borderRadiusApplication: 'end', dataLabels: { position: 'top' } } },
     dataLabels: { enabled: true, offsetX: 22, style: { fontSize: '12px', fontWeight: 700, colors: ['#1a1a1a'] }, formatter: v => fmt(v) },
     xaxis: { min: Math.min(0, ...ds.map(d => d.nps)) - 10, max: 100, axisBorder: { show: false } },
@@ -153,7 +153,7 @@ export function mount(rec, brand, meta) {
       { name: 'Neutros', data: top.map(c => c.n) },
       { name: 'Promotores', data: top.map(c => c.p) },
     ],
-    colors: ['#db3a23', '#c4c4c4', brand.colors.main],
+    colors: [CORES.det, CORES.neu, CORES.pro],
     plotOptions: { bar: { horizontal: true, barHeight: '62%', borderRadius: 4, borderRadiusApplication: 'end', borderRadiusWhenStacked: 'last' } },
     stroke: { width: 1, colors: ['#fff'] },
     xaxis: { categories: top.map(c => [curto(c.nome), `${c.driver} · NPS ${fmt(c.nps)}`]), labels: { formatter: v => fmt(v) }, axisBorder: { show: false } },
@@ -206,12 +206,12 @@ export function exportar(rec, brand, meta) {
       { id: 'drv', titulo: 'NPS por driver', desenhar: (s, p) => s.addChart(p.ChartType.bar, [
         { name: 'NPS', labels: ds.map(d => d.nome), values: ds.map(d => d.nps) },
         { name: 'Meta', labels: ds.map(d => d.nome), values: ds.map(() => meta) },
-      ], { ...b, barDir: 'bar', barGrouping: 'clustered', catAxisOrientation: 'maxMin', chartColors: [hex(brand.colors.main), 'D6DDE3'], showValue: true, valAxisMinVal: -20, valAxisMaxVal: 100 }) },
+      ], { ...b, barDir: 'bar', barGrouping: 'clustered', catAxisOrientation: 'maxMin', chartColors: [hex(CORES.pro), 'D6DDE3'], showValue: true, valAxisMinVal: -20, valAxisMaxVal: 100 }) },
       { id: 'top', titulo: 'Causas que mais pesam', desenhar: (s, p) => s.addChart(p.ChartType.bar, [
         { name: 'Detratores', labels: top.map(c => `${c.nome} (${c.driver})`), values: top.map(c => c.d) },
         { name: 'Neutros', labels: top.map(c => `${c.nome} (${c.driver})`), values: top.map(c => c.n) },
         { name: 'Promotores', labels: top.map(c => `${c.nome} (${c.driver})`), values: top.map(c => c.p) },
-      ], { ...b, barDir: 'bar', barGrouping: 'stacked', catAxisOrientation: 'maxMin', chartColors: ['DB3A23', 'C4C4C4', hex(brand.colors.main)], catAxisLabelFontSize: 10 }) },
+      ], { ...b, barDir: 'bar', barGrouping: 'stacked', catAxisOrientation: 'maxMin', chartColors: [hex(CORES.det), hex(CORES.neu), hex(CORES.pro)], catAxisLabelFontSize: 10 }) },
       { id: 'tab', titulo: 'Tabela única de causas', desenhar: tabelaPptx(b, brand, [...cs].sort((a, c) => c.total - a.total), meta, true) },
     ],
   };
